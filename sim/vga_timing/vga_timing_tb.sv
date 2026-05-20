@@ -1,12 +1,3 @@
-/**
- *  Copyright (C) 2025  AGH University of Science and Technology
- * MTM UEC2
- * Author: Piotr Kaczmarczyk
- *
- * Description:
- * Testbench for vga_timing module.
- */
-
 module vga_timing_tb;
 
     timeunit 1ns;
@@ -19,7 +10,7 @@ module vga_timing_tb;
      *  Local parameters
      */
 
-    localparam CLK_PERIOD = 25;     // 40 MHz
+    localparam CLK_PERIOD = 15;     // ok 65 MHz bo period 15,3846...
     localparam RST_START_TIME  = 1.25*CLK_PERIOD;
     localparam RST_ACTIVE_TIME = 2.00*CLK_PERIOD;
 

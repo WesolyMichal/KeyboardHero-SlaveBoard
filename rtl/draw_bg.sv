@@ -1,12 +1,3 @@
-/**
- * Copyright (C) 2025  AGH University of Science and Technology
- * MTM UEC2
- * Author: Piotr Kaczmarczyk
- *
- * Description:
- * Draw background.
- */
-
 module draw_bg (
         input  logic clk,
         input  logic rst_n,
@@ -40,7 +31,6 @@ module draw_bg (
 
     logic [11:0] rgb_nxt;
 
-
     /**
      * Internal logic
      */
@@ -68,116 +58,14 @@ module draw_bg (
     always_comb begin : bg_comb_blk
         if (vblnk_in || hblnk_in) begin             // Blanking region:
             rgb_nxt = 12'h0_0_0;                    // - make it black.
-        end else begin                              // Active region:
-            if (vcount_in == 0)                     // - top edge:
-                rgb_nxt = 12'hf_f_0;                // - - make a yellow line.
-            else if (vcount_in == VER_PIXELS - 1)   // - bottom edge:
-                rgb_nxt = 12'hf_0_0;                // - - make a red line.
-            else if (hcount_in == 1)                // - left edge:
-                rgb_nxt = 12'h0_f_0;                // - - make a green line.
-            else if (hcount_in == HOR_PIXELS - 1)   // - right edge:
-                rgb_nxt = 12'h0_0_f;                // - - make a blue line.
-
-    // Lewa linia M
-            else if ((hcount_in >= 90 && hcount_in <= 100) && (vcount_in >= 300 && vcount_in <= 400))
-                rgb_nxt = 12'h0_0_f; 
-
-    // Prawa linia M
-            else  if ((hcount_in >= 170 && hcount_in <= 180) && (vcount_in >= 300 && vcount_in <= 400))
-                rgb_nxt = 12'h0_0_f; 
-
-    
-    // kwadraty na przeątnej M
-            else  if ((hcount_in >= 100 && hcount_in <= 110) && (vcount_in >= 310 && vcount_in <= 320))
-                rgb_nxt = 12'h0_0_f; 
-
-            else  if ((hcount_in >= 110 && hcount_in <= 120) && (vcount_in >= 320 && vcount_in <= 330))
-                rgb_nxt = 12'h0_0_f; 
-
-            else  if ((hcount_in >= 120 && hcount_in <= 130) && (vcount_in >= 330 && vcount_in <= 340))
-                rgb_nxt = 12'h0_0_f; 
-
-            else  if ((hcount_in >= 130 && hcount_in <= 140) && (vcount_in >= 340 && vcount_in <= 350))
-                rgb_nxt = 12'h0_0_f; 
-
-            else  if ((hcount_in >= 140 && hcount_in <= 150) && (vcount_in >= 330 && vcount_in<= 340))
-                rgb_nxt = 12'h0_0_f; 
-
-            else  if ((hcount_in >= 150 && hcount_in <= 160) && (vcount_in >= 320 && vcount_in<= 330))
-                rgb_nxt = 12'h0_0_f; 
-
-            else  if ((hcount_in >= 160 && hcount_in <= 170) && (vcount_in >= 310 && vcount_in <= 320))
-                rgb_nxt = 12'h0_0_f; 
-    // Litera T
-
-            else  if ((hcount_in >= 200 && hcount_in <= 270) && (vcount_in >= 300 && vcount_in <= 310))
-                rgb_nxt = 12'h0_0_f; 
-
-            else  if ((hcount_in >= 230 && hcount_in <= 240) && (vcount_in >= 300 && vcount_in <= 400))
-                rgb_nxt = 12'h0_0_f; 
-
-
-
-// Lewa linia M 2
-            else if ((hcount_in >= 510 && hcount_in <= 520) && (vcount_in >= 300 && vcount_in <= 400))
-            rgb_nxt = 12'h0_0_f; 
-
-// Prawa linia M 2
-        else  if ((hcount_in >= 590 && hcount_in <= 600) && (vcount_in >= 300 && vcount_in <= 400))
-            rgb_nxt = 12'h0_0_f; 
-
-
-// kwadraty na przeątnej M 2
-        else  if ((hcount_in >= 520 && hcount_in <= 530) && (vcount_in >= 310 && vcount_in <= 320))
-            rgb_nxt = 12'h0_0_f; 
-
-        else  if ((hcount_in >= 530 && hcount_in <= 540) && (vcount_in >= 320 && vcount_in <= 330))
-            rgb_nxt = 12'h0_0_f; 
-
-        else  if ((hcount_in >= 540 && hcount_in <= 550) && (vcount_in >= 330 && vcount_in <= 340))
-            rgb_nxt = 12'h0_0_f; 
-
-        else  if ((hcount_in >= 550 && hcount_in <= 560) && (vcount_in >= 340 && vcount_in <= 350))
-            rgb_nxt = 12'h0_0_f; 
-
-        else  if ((hcount_in >= 560 && hcount_in <= 570) && (vcount_in >= 330 && vcount_in<= 340))
-            rgb_nxt = 12'h0_0_f; 
-
-        else  if ((hcount_in >= 570 && hcount_in <= 580) && (vcount_in >= 320 && vcount_in<= 330))
-            rgb_nxt = 12'h0_0_f; 
-
-        else  if ((hcount_in >= 580 && hcount_in <= 590) && (vcount_in >= 310 && vcount_in <= 320))
-            rgb_nxt = 12'h0_0_f; 
-      
-        //lewa linia W
-        else if ((hcount_in >= 620 && hcount_in <= 630) && (vcount_in >= 300 && vcount_in <= 400))
-            rgb_nxt = 12'h0_0_f; 
-        //prawa linia W
-        else  if ((hcount_in >= 700 && hcount_in <= 710) && (vcount_in >= 300 && vcount_in <= 400))
-            rgb_nxt = 12'h0_0_f; 
-        // kwadraty na przeątnej W
-        else  if ((hcount_in >= 630 && hcount_in <= 640) && (vcount_in >= 380 && vcount_in <= 390))
-                rgb_nxt = 12'h0_0_f; 
-
-        else  if ((hcount_in >= 640 && hcount_in <= 650) && (vcount_in >= 370 && vcount_in <= 380))
-                rgb_nxt = 12'h0_0_f; 
-
-        else  if ((hcount_in >= 650 && hcount_in <= 660) && (vcount_in >= 360 && vcount_in <= 370))
-                rgb_nxt = 12'h0_0_f; 
-
-        else  if ((hcount_in >= 660 && hcount_in <= 670) && (vcount_in >= 350 && vcount_in <= 360))
-                rgb_nxt = 12'h0_0_f; 
-
-        else  if ((hcount_in >= 670 && hcount_in <= 680) && (vcount_in >= 360 && vcount_in<= 370))
-                rgb_nxt = 12'h0_0_f; 
-
-        else  if ((hcount_in >= 680 && hcount_in <= 690) && (vcount_in >= 370 && vcount_in<= 380))
-                rgb_nxt = 12'h0_0_f; 
-
-        else  if ((hcount_in >= 690 && hcount_in <= 700) && (vcount_in >= 380 && vcount_in <= 390))
-                rgb_nxt = 12'h0_0_f; 
-                else
-                    rgb_nxt = 12'h8_8_8; 
-            end
+        end else begin   
+            if (hcount_in >= 256 && hcount_in <= 768) begin
+                if (hcount_in[5:0] == 6'd0 || hcount_in[5:0] == 6'd1) 
+                    rgb_nxt = 12'h0_f_0;  //8kolumn z linia 2px
+                else if (vcount_in == 640 || vcount_in == 641) 
+                    rgb_nxt = 12'h0_f_0; //2kreski oznaczajace obszar hit
+                else  rgb_nxt = 12'h2_2_2;  //gryf
+            end else  rgb_nxt = 12'h6_3_9; //tlo 
+        end
     end
 endmodule

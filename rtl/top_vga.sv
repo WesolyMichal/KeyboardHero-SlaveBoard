@@ -1,17 +1,3 @@
-/**
- * San Jose State University
- * EE178 Lab #4
- * Author: prof. Eric Crabilla
- *
- * Modified by:
- * 2025  AGH University of Science and Technology
- * MTM UEC2
- * Piotr Kaczmarczyk
- *
- * Description:
- * The project top module.
- */
-
 module top_vga (
         input  logic clk,
         input  logic rst_n,
