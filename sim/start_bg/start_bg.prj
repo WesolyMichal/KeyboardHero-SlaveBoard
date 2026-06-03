@@ -1,0 +1,11 @@
+sv work ../../rtl/vga_pkg.sv \
+        ../../rtl/buttons_pkg.sv \
+        ../../rtl/vga_if.sv \
+        ../../rtl/vga_timing.sv \
+        ../../rtl/start_bg.sv \
+        ../../rtl/delay.sv \
+        ../../rtl/enter_button_rom.sv \
+        ../../rtl/agh_image_rom.sv \
+        ../../rtl/font_rom.sv \
+        ../common/tiff_writer.sv \
+        start_bg_tb.sv

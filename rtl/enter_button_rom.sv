@@ -1,7 +1,6 @@
 module enter_button_rom (
     input  logic clk,
     input  logic [12:0] rom_addr, // 13 bitów na adresy do 8191
-    input logic enter,
     output logic enter_pixel_bit
 );
 
@@ -13,7 +12,7 @@ module enter_button_rom (
     initial begin
         // Plik "enter_button.data" musi znajdować się w folderze symulacji 
         // lub być dodany do Vivado jako "Design Source"
-        $readmemb("../../rtl/data/agh_image_rom.data", btn_memory);
+        $readmemb("../../rtl/data/enter.data", btn_memory);
     end
 
     // Odczyt synchroniczny z opóźnieniem 1 taktu (tak jak prawdzimy Block RAM)
