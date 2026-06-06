@@ -1,4 +1,4 @@
-module start_bg_tb;
+module endscreen_bg_tb;
 
     timeunit 1ns;
     timeprecision 1ps;
@@ -19,10 +19,10 @@ module start_bg_tb;
     logic clk, rst_n;
     wire vs, hs;
     wire [3:0] r, g, b;
-    logic [7:0] button;
-    wire [11:0] rgb_out_start_bg;
+    logic [15:0] endscore;
+    wire [11:0] rgb_out_endscreen_bg;
 
-    logic enable_start_in, enable_start_out;
+    logic enable_endscreen_in, enable_endscreen_out;
 
 
     /**
@@ -39,6 +39,8 @@ module start_bg_tb;
     vga_if vga_out_if();
     vga_if vga_in_bez_rgb_if();
     vga_if vga_out_bez_rgb_if();
+
+    
 
     /**
      * Submodules instances
@@ -61,21 +63,21 @@ module start_bg_tb;
         .vga_out(vga_out_bez_rgb_if)
     );
 
-    start_bg dut (
+    endscreen_bg dut (
         .clk(clk),
         .rst_n(rst_n),
         .vga_in(vga_in_bez_rgb_if.in),
-        .rgb_out_start_bg(rgb_out_start_bg),
-        .button(button),
-        .enable_start_in(enable_start_in),
-        .enable_start_out(enable_start_out)
+        .rgb_out_endscreen_bg(rgb_out_endscreen_bg),
+        .end_score(endscore),
+        .enable_endscreen_in(enable_endscreen_in),
+        .enable_endscreen_out(enable_endscreen_out)
     );
 
     assign vs = vga_out_bez_rgb_if.vsync;
     assign hs = vga_out_bez_rgb_if.hsync;
-    assign r = rgb_out_start_bg[11:8];
-    assign g = rgb_out_start_bg[7:4];
-    assign b = rgb_out_start_bg[3:0];
+    assign r = rgb_out_endscreen_bg[11:8];
+    assign g = rgb_out_endscreen_bg[7:4];
+    assign b = rgb_out_endscreen_bg[3:0];
 
     tiff_writer #(
         .XDIM(16'd1344),
@@ -96,12 +98,11 @@ module start_bg_tb;
 
     initial begin
         rst_n = 1'b1;
-        button = 8'h5A;
-        
+        endscore = 300;
         #(RST_START_TIME) rst_n = 1'b0;
         #(RST_ACTIVE_TIME) rst_n = 1'b1;
 
-        enable_start_in = 1'b0;
+        enable_endscreen_in = 1'b1;
 
         $display("If simulation ends before the testbench");
         $display("completes, use the menu option to run all.");

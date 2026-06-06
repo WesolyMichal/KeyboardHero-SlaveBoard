@@ -12,7 +12,7 @@ package buttons_pkg;
 
         // --- Znaki mniejszości / większości ---
         // Na klawiaturze znak '<' to fizycznie klawisz przecinka (,), a '>' to klawisz kropki (.)
-        localparam logic [7:0] BTN_LESS    = 8'h41; // Klawisz: , <
-        localparam logic [7:0] BTN_GREATER = 8'h49; // Klawisz: . >
+        localparam logic [7:0] BTN_UP    = 8'h41; // Klawisz: , <
+        localparam logic [7:0] BTN_DOWN = 8'h49; // Klawisz: . >
 
 endpackage

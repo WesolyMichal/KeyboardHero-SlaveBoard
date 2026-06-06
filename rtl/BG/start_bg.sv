@@ -3,9 +3,11 @@ module start_bg (
     input logic rst_n,
 
     vga_if.in vga_in,
-    vga_if.out vga_out,
+    output logic [11:0] rgb_out_start_bg,
 
-    input logic [7:0] button
+    input logic [7:0] button,
+    input logic enable_start_in,
+    output logic enable_start_out
 );
 
 import buttons_pkg::*;
@@ -44,6 +46,8 @@ logic [7:0] hoff_text;
 logic [7:0] char_code;
 logic [2:0] px_h_in_char, d1_px_h_in_char;
 
+logic [1:0] enable_reg;
+
 // Flagi kombinacyjne + opuznione
 logic in_logo, in_button, d1_in_logo, d1_in_button;
 logic in_text, d1_in_text;
@@ -57,17 +61,16 @@ logic [10:0] font_addr;
 logic [7:0] font_pixels;
 
 // SYGNAŁY OPÓŹNIONE Z MODUŁU DELAY
-logic [10:0] d1_vcount, d1_hcount;
-logic        d1_vsync, d1_hsync, d1_vblnk, d1_hblnk;
+logic       d1_vblnk, d1_hblnk;
 
 delay  #(
-        .WIDTH(26), 
+        .WIDTH(2), 
         .CLK_DEL(1)
     )u_vga_in_del1(
         .clk,
         .rst_n,
-        .din({vga_in.vcount, vga_in.hcount, vga_in.vsync, vga_in.hsync, vga_in.vblnk, vga_in.hblnk}),
-        .dout({d1_vcount, d1_hcount, d1_vsync, d1_hsync, d1_vblnk, d1_hblnk})
+        .din({vga_in.vblnk, vga_in.hblnk}),
+        .dout({d1_vblnk, d1_hblnk})
     );
 
 // Instancje ROM
@@ -146,7 +149,7 @@ end
 
 // Łączenie kolorów 
 always_comb begin
-    if(d1_hblnk || d1_vblnk) begin //blank
+    if((d1_hblnk || d1_vblnk || !enable_reg[0]))  begin //blank
         rgb_nxt = 12'h000;
     end else if(d1_in_logo) begin //logo
         rgb_nxt = logo_rgb;
@@ -164,22 +167,13 @@ end
 // Wyściowy rejestr
 always_ff @(posedge clk, negedge rst_n) begin
     if(!rst_n) begin
-        vga_out.vcount <= '0;
-        vga_out.vsync  <= '0;
-        vga_out.vblnk  <= '0;
-        vga_out.hcount <= '0;
-        vga_out.hsync  <= '0;
-        vga_out.hblnk  <= '0;
-        vga_out.rgb    <= '0;
+        rgb_out_start_bg <= '0;
+        enable_reg     <= '0;
+        enable_start_out <= 1'b0;
     end else begin
-        vga_out.vcount  <= d1_vcount;
-        vga_out.hcount  <= d1_hcount;
-        vga_out.vsync   <= d1_vsync;
-        vga_out.hsync   <= d1_hsync; 
-        vga_out.vblnk   <= d1_vblnk;
-        vga_out.hblnk   <= d1_hblnk;
-
-        vga_out.rgb     <= rgb_nxt;
+        rgb_out_start_bg <= rgb_nxt;
+        enable_reg <= {enable_reg[0], enable_start_in}; 
+        enable_start_out <= enable_reg[1];
     end
 end
 
