@@ -1,11 +1,11 @@
 module song_bg (
     input logic clk,
     input logic rst_n,
+    input logic enable_song_in,
 
     vga_if.in vga_in,
-    output logic [11:0] rgb_out_song_bg,
 
-    input logic enable_song_in,
+    output logic [11:0] rgb_out_song_bg,
     output logic enable_song_out
 );
 

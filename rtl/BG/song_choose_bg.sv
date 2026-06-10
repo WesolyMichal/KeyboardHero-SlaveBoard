@@ -1,14 +1,13 @@
 module song_choose_bg (
     input logic clk,
     input logic rst_n,
+    input logic enable_menu_in,
+    input logic [7:0] button,
 
     vga_if.in vga_in,
-    output logic [11:0] rgb_out_menu,
-
-    input logic enable_menu_in,
+    
+    output logic [11:0] rgb_out_menu_bg,
     output logic enable_menu_out,
-
-    input logic [7:0] button,
     output logic [2:0] selected_song 
 );
 
@@ -169,13 +168,13 @@ end
 // --- WYJŚCIOWY REJESTR ---
 always_ff @(posedge clk, negedge rst_n) begin
     if(!rst_n) begin
-        rgb_out_menu    <= '0;
+        rgb_out_menu_bg    <= '0;
         enable_reg      <= '0;
         enable_menu_out <= '0;
     end else begin
         enable_reg      <= {enable_reg[0], enable_menu_in}; 
         enable_menu_out <= enable_reg[1];
-        rgb_out_menu    <= rgb_nxt;
+        rgb_out_menu_bg    <= rgb_nxt;
     end
 end
 

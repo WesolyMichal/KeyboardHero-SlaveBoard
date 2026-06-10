@@ -1,12 +1,12 @@
 module endscreen_bg (
     input logic clk,
     input logic rst_n,
-
-    vga_if.in vga_in,
-    output logic [11:0] rgb_out_endscreen_bg,
-
     input logic [15:0] end_score,
     input logic enable_endscreen_in,
+
+    vga_if.in vga_in,
+
+    output logic [11:0] rgb_out_endscreen_bg,
     output logic enable_endscreen_out
 );
 
