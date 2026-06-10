@@ -1,0 +1,10 @@
+sv work ../../rtl/game_pkg.sv \
+sv work ../../rtl/delay.sv \
+sv work ../../rtl/vga_timing.sv \
+sv work ../../rtl/BG/song_bg.sv \ 
+sv work ../../rtl/BG/deley_vga_if.sv \
+sv work ../../rtl/BG/mux_bg.sv \
+sv work ../../rtl/song_rom.sv \
+sv work ../../rtl/song_mask.sv \
+sv work vga_if.sv \
+sv work song_mask_tb.sv 
