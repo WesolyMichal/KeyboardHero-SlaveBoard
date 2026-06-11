@@ -1,7 +1,7 @@
 module endscreen_bg (
     input logic clk,
     input logic rst_n,
-    input logic [15:0] end_score,
+    input logic [15:0] end_score_in,
     input logic enable_endscreen_in,
 
     vga_if.in vga_in,
@@ -40,6 +40,7 @@ localparam STAR_ADDR_SHIFT = $clog2(STAR_SCALE);
 
 // --- SYGNAŁY WEWNĘTRZNE ---
 logic [11:0] rgb_nxt;
+logic [15:0] end_score;
 
 logic [6:0] voff_text;
 logic [7:0] hoff_text;
@@ -96,6 +97,8 @@ delay  #(
     .addr(star_addr),
     .star_pixel(star_pixel)   
  );
+
+assign end_score = end_score_in;
 
 // Drivowanie rom
 always_comb begin

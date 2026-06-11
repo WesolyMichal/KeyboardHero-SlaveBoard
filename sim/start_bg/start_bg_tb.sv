@@ -58,7 +58,7 @@ module start_bg_tb;
         .clk(clk),
         .rst_n(rst_n),
         .vga_in(vga_in_bez_rgb_if),
-        .vga_out(vga_out_bez_rgb_if)
+        .delay_vga_out(vga_out_bez_rgb_if)
     );
 
     start_bg dut (

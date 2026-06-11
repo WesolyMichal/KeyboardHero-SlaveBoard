@@ -1,16 +1,9 @@
-/*
- * Zaślepki (stubs) dla brakujących modułów.
- * Zostały zdefiniowane tutaj, aby umożliwić kompilację testbencha
- * bez modyfikowania głównej struktury projektu.
- */
-
 module song_mask_tb;
 
 timeunit 1ns;
 timeprecision 1ps;
 
 // --- Parametry symulacji ---
-// Zegar 65MHz -> okres = 1/65e6 s = 15.3846 ns
 localparam real CLK_PERIOD = 1000.0 / 65.0;
 
 // --- Parametry VGA 1024x768 @ 60Hz ---

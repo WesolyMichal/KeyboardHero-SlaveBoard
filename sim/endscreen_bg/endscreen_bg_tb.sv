@@ -60,7 +60,7 @@ module endscreen_bg_tb;
         .clk(clk),
         .rst_n(rst_n),
         .vga_in(vga_in_bez_rgb_if),
-        .vga_out(vga_out_bez_rgb_if)
+        .delay_vga_out(vga_out_bez_rgb_if)
     );
 
     endscreen_bg dut (
@@ -68,7 +68,7 @@ module endscreen_bg_tb;
         .rst_n(rst_n),
         .vga_in(vga_in_bez_rgb_if.in),
         .rgb_out_endscreen_bg(rgb_out_endscreen_bg),
-        .end_score(endscore),
+        .end_score_in(endscore),
         .enable_endscreen_in(enable_endscreen_in),
         .enable_endscreen_out(enable_endscreen_out)
     );

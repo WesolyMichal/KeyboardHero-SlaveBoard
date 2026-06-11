@@ -1,0 +1,20 @@
+sv work ../../rtl/game_pkg.sv \
+        ../../rtl/vga_pkg.sv \
+        ../../rtl/buttons_pkg.sv \
+        ../../rtl/vga_if.sv \
+        ../../rtl/vga_timing.sv \
+        ../../rtl/delay.sv \
+        ../../rtl/BG/delay_vga_if.sv \
+        ../../rtl/BG/start_bg.sv \
+        ../../rtl/BG/song_choose_bg.sv \
+        ../../rtl/BG/song_bg.sv \
+        ../../rtl/BG/endscreen_bg.sv \
+        ../../rtl/BG/mux_bg.sv \
+        ../../rtl/top_bg.sv \
+        ../../rtl/rom/enter_button_rom.sv \
+        ../../rtl/rom/agh_image_rom.sv \
+        ../../rtl/rom/font_rom.sv \
+        ../../rtl/rom/mibombo_rom.sv \
+        ../../rtl/rom/star_rom.sv \
+        ../common/tiff_writer.sv \
+        top_bg_tb.sv

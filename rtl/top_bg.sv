@@ -3,7 +3,7 @@ module top_bg (
     input logic rst_n,
 
     input [7:0] button,
-
+    input logic [15:0] score_in,
     input logic enable_start,
     input logic enable_song_choose,
     input logic enable_song,
@@ -53,7 +53,7 @@ song_bg u_song_bg (
 endscreen_bg u_endscreen_bg(
     .clk,
     .rst_n,
-    .end_score(),
+    .end_score_in(score_in),
     .enable_endscreen_in(enable_endscreen),
     .vga_in(vga_in),
     .enable_endscreen_out,
