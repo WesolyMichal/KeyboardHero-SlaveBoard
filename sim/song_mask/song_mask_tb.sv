@@ -25,12 +25,13 @@ logic rst_n;
 logic enable, enable_song_bg, enable_song_mux;
 logic [1:0] song_select;
 
-wire [11:0] rgb_out_song, rgb_out_mask;
+wire [11:0] rgb_out_song;
 
 // --- Instancja interfejsu VGA ---
 vga_if vga_if_timing();
 vga_if delay_vga_if();
 vga_if vga_if_inst();
+vga_if vga_if_out();
 
 // --- Generator zegara ---
 initial begin
@@ -80,7 +81,7 @@ song_mask dut (
     .clk(clk),
     .rst_n(rst_n),
     .vga_in(vga_if_inst),
-    .rgb_out_mask(rgb_out_mask),
+    .vga_out(vga_if_out),
     .enable_mask_in(enable_song_mux),
     .song_select(song_select)
 );
