@@ -1,10 +1,12 @@
 sv work ../../rtl/game_pkg.sv \
-sv work ../../rtl/delay.sv \
-sv work ../../rtl/vga_timing.sv \
-sv work ../../rtl/BG/song_bg.sv \ 
-sv work ../../rtl/BG/deley_vga_if.sv \
-sv work ../../rtl/BG/mux_bg.sv \
-sv work ../../rtl/song_rom.sv \
-sv work ../../rtl/song_mask.sv \
-sv work vga_if.sv \
-sv work song_mask_tb.sv 
+        ../../rtl/vga_pkg.sv \
+        ../../rtl/delay.sv \
+        ../../rtl/vga_timing.sv \
+        ../../rtl/BG/song_bg.sv \
+        ../../rtl/BG/delay_vga_if.sv \
+        ../../rtl/BG/mux_bg.sv \
+        ../../rtl/rom/song_rom.sv \
+        ../../rtl/rom/mibombo_rom.sv \
+        ../../rtl/song_mask.sv \
+        ../../rtl/vga_if.sv \
+        song_mask_tb.sv 

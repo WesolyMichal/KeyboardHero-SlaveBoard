@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 /*
  * Zaślepki (stubs) dla brakujących modułów.
  * Zostały zdefiniowane tutaj, aby umożliwić kompilację testbencha
@@ -7,6 +5,9 @@
  */
 
 module song_mask_tb;
+
+timeunit 1ns;
+timeprecision 1ps;
 
 // --- Parametry symulacji ---
 // Zegar 65MHz -> okres = 1/65e6 s = 15.3846 ns
@@ -31,6 +32,7 @@ logic rst_n;
 logic enable, enable_song_bg, enable_song_mux;
 logic [1:0] song_select;
 
+wire [11:0] rgb_out_song, rgb_out_mask;
 
 // --- Instancja interfejsu VGA ---
 vga_if vga_if_timing();
@@ -46,19 +48,19 @@ end
 vga_timing u_vga_timing (
     .clk(clk),
     .rst_n(rst_n),
-    .hcount(vga_if_timing().hcount),
-    .vcount(vga_if_timing().vcount),
-    .hsync(vga_if_timing().hsync),
-    .vsync(vga_if_timing().vsync),
-    .hblnk(vga_if_timing().hblnk),
-    .vblnk(vga_if_timing().vblnk)
+    .hcount(vga_if_timing.hcount),
+    .vcount(vga_if_timing.vcount),
+    .hsync(vga_if_timing.hsync),
+    .vsync(vga_if_timing.vsync),
+    .hblnk(vga_if_timing.hblnk),
+    .vblnk(vga_if_timing.vblnk)
 );
 
 song_bg u_song_bg (
     .clk(clk),
     .rst_n(rst_n),
     .enable_song_in(enable),
-    .vga_in(vga_if_timing()),
+    .vga_in(vga_if_timing),
     .rgb_out_song_bg(rgb_out_song), 
     .enable_song_out(enable_song_bg)
 );
@@ -66,8 +68,8 @@ song_bg u_song_bg (
 delay_vga_if u_delay_vga_if (
     .clk(clk),
     .rst_n(rst_n),
-    .din(vga_if_timing()),
-    .dout(delay_vga_if)
+    .vga_in(vga_if_timing),
+    .delay_vga_out(delay_vga_if)
 );
 
 mux_bg u_mux_bg (
@@ -76,7 +78,7 @@ mux_bg u_mux_bg (
     .enable_song(enable_song_bg),
     .rgb_song(rgb_out_song),
     .delay_vga_in(delay_vga_if),
-    .vga_out(vga_if_inst()),
+    .vga_out(vga_if_inst),
     .enable_song_out(enable_song_mux)
 );
 
@@ -111,7 +113,7 @@ initial begin
 
     // 3. Pozwól symulacji działać przez określony czas (np. 2000 klatek)
     // Czas trwania jednej klatki: H_TOTAL * V_TOTAL * CLK_PERIOD
-    #(H_TOTAL * V_TOTAL * CLK_PERIOD * 2000);
+    #17ms;
 
     // 4. Zakończenie symulacji
     $display("[%0t] Simulation finished.", $time);

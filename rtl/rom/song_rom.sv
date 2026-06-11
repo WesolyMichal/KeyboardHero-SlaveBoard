@@ -14,10 +14,10 @@ logic [47:0] song_2 [0:127];
 logic [47:0] song_3 [0:127];
 
 initial begin
-    $readmemh("../../rtl/core/songs/song_0.data", song_0);
-    $readmemh("../../rtl/core/songs/song_1.data", song_1);
-    $readmemh("../../rtl/core/songs/song_2.data", song_2);
-    $readmemh("../../rtl/core/songs/song_3.data", song_3);
+    $readmemh("../../rtl/songs/song_0.data", song_0);
+    $readmemh("../../rtl/songs/song_1.data", song_1);
+    $readmemh("../../rtl/songs/song_2.data", song_2);
+    $readmemh("../../rtl/songs/song_3.data", song_3);
 end
 
 always_ff @(posedge clk) begin
