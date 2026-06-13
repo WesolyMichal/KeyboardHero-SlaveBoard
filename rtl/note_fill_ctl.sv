@@ -3,7 +3,7 @@ import game_pkg::*;
 module note_fill_ctl #(
     parameter SCREEN_HEIGHT = 640,
     parameter INV_SCALE = 20,
-    parameter MINIMUM_HEIGHT = 10
+    parameter MINIMUM_HEIGHT = INV_SCALE * 10
 )(
     input logic clk,
     input logic rst_n,
@@ -37,7 +37,9 @@ always_comb begin
         note_fill_nxt = '{0, 0, 0, 0, 0, 0};
     end else begin
         for(logic [2:0] column = 0; column < 6; column++) begin
-            for(logic [11:0] y_pixel; y_pixel < SCREEN_HEIGHT; y_pixel++) begin
+            for(logic [11:0] y_pixel = 0; y_pixel < SCREEN_HEIGHT; y_pixel++) begin
+
+                note_fill_nxt[column][y_pixel] = 1'b0;
 
                 if(current_note[0].buttons[column]) begin
 
@@ -49,8 +51,9 @@ always_comb begin
                                             + (current_note[0].long[column] ? duration_remaining : 0) ) ) 
 
                         note_fill_nxt[column][y_pixel] = 1'b1;
+                end
 
-                end else if(current_note[1].buttons[column]) begin
+                if(current_note[1].buttons[column]) begin
 
                     if((y_pixel * INV_SCALE >= waiting_remaining 
                                             + duration_remaining 
@@ -64,8 +67,9 @@ always_comb begin
                                             + (current_note[1].long[column] ? current_note[1].duration : 0) ) ) 
 
                         note_fill_nxt[column][y_pixel] = 1'b1;
+                end
 
-                end else if(current_note[2].buttons[column]) begin
+                if(current_note[2].buttons[column]) begin
 
                     if((y_pixel * INV_SCALE >= waiting_remaining 
                                             + duration_remaining 
@@ -83,9 +87,8 @@ always_comb begin
                                             + (current_note[2].long[column] ? current_note[2].duration : 0) ) ) 
 
                         note_fill_nxt[column][y_pixel] = 1'b1;
-
-                end else note_fill_nxt[column][y_pixel] = 1'b0;
-
+                end
+                
             end
         end
     end
