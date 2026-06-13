@@ -17,8 +17,6 @@ module note_fill_ctl #(
 
 logic note_fill_nxt[0:5][0:SCREEN_HEIGHT-1];
 
-logic [15:0] waiting_remaining, duration_remaining;
-
 always_ff @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         note_fill <= '{0, 0, 0, 0, 0, 0};
@@ -28,6 +26,8 @@ always_ff @(posedge clk or negedge rst_n) begin
 end
 
 always_comb begin
+    logic [15:0] waiting_remaining, duration_remaining;
+
     note_fill_nxt = note_fill;
 
     waiting_remaining = (timer < current_note[0].waiting) ? (current_note[0].waiting - timer) : 0;
@@ -85,7 +85,7 @@ always_comb begin
                         note_fill_nxt[column][y_pixel] = 1'b1;
 
                 end else note_fill_nxt[column][y_pixel] = 1'b0;
-                
+
             end
         end
     end

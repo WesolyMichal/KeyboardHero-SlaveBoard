@@ -73,7 +73,7 @@ logic frame_tick;
 
 // --- STAN GRY ---
 logic [7:0] note_addr;
-note_t current_note;
+note_t current_note [0:2];
 logic [15:0] wait_timer;
 
 // Struktura opisująca pojedynczą, aktywną nutę na ekranie
@@ -184,17 +184,17 @@ always_ff @(posedge clk, negedge rst_n) begin
             if (wait_timer > 0) begin
                 wait_timer <= wait_timer - 1;
             end else begin 
-                wait_timer <= current_note.waiting;
+                wait_timer <= current_note[0].waiting;
                 note_addr <= note_addr + 1;
             
                 for (int i = 0; i < NOTE_COUNT; i++) begin
-                    if (current_note.buttons[i]) begin
+                    if (current_note[0].buttons[i]) begin
                         for (int j = 0; j < MAX_ACTIVE_NOTES; j++) begin
                             if (!active_notes[j].active) begin
                                 active_notes[j].active  <= 1'b1;
                                 active_notes[j].track   <= i;
                                 active_notes[j].y_pos   <= NOTE_SPAWN_Y;
-                                active_notes[j].height  <= (current_note.duration > 0 ? current_note.duration : 1) * NOTE_BASE_HEIGHT;
+                                active_notes[j].height  <= (current_note[0].duration > 0 ? current_note[0].duration : 1) * NOTE_BASE_HEIGHT;
                                 break;
                             end
                         end
