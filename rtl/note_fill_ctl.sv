@@ -1,4 +1,5 @@
 import game_pkg::*;
+import song_mask_pkg::*;
 
 module note_fill_ctl #(
     parameter SCREEN_HEIGHT = 640,
@@ -7,11 +8,12 @@ module note_fill_ctl #(
 )(
     input logic clk,
     input logic rst_n,
-    input logic enable,
+    input logic enable_in,
     
     input logic [15:0] timer,
     input note_t current_note [0:2],
 
+    output logic enable_out,
     output logic note_fill[0:5][0:SCREEN_HEIGHT-1]
 );
 
@@ -20,8 +22,10 @@ logic note_fill_nxt[0:5][0:SCREEN_HEIGHT-1];
 always_ff @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         note_fill <= '{0, 0, 0, 0, 0, 0};
+        enable_out<= '0;
     end else begin
         note_fill <= note_fill_nxt;
+        enable_out<= enable_in;
     end
 end
 
@@ -33,7 +37,7 @@ always_comb begin
     waiting_remaining = (timer < current_note[0].waiting) ? (current_note[0].waiting - timer) : 0;
     duration_remaining = (timer < current_note[0].waiting) ? current_note[0].duration : current_note[0].duration - (timer - current_note[0].waiting);
 
-    if(!enable) begin
+    if(!enable_in) begin
         note_fill_nxt = '{0, 0, 0, 0, 0, 0};
     end else begin
         for(logic [2:0] column = 0; column < 6; column++) begin
