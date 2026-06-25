@@ -7,6 +7,11 @@ sv work ../../rtl/game_pkg.sv \
         ../../rtl/BG/mux_bg.sv \
         ../../rtl/rom/song_rom.sv \
         ../../rtl/rom/mibombo_rom.sv \
-        ../../rtl/song_mask.sv \
         ../../rtl/vga_if.sv \
-        song_mask_tb.sv 
+        ../../rtl/song_mask/song_mask_pkg.sv \
+        ../../rtl/song_mask/note_fill_ctl.sv \
+        ../../rtl/song_mask/song_out_logic.sv \
+        ../common/tiff_writer.sv \
+        song_mask_tb.sv \
+        song_mask4test.sv
+        

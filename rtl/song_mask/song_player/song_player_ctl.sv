@@ -1,42 +1,45 @@
 import game_pkg::*;
 
-module song_player(
+module song_player_ctl(
     input logic clk,
     input logic rst_n,
 
     input logic enable_in,
-    input logic tick,
+    input logic tick_in,
+    output logic tick_out,
 
-    input note_t current_note,
-
-    output logic final_note,
-
+    input logic final_note,
+    input note_t coming_note[0:2],
+    
     output logic [7:0] note_addr,
     output logic enable_out,
     output logic [15:0] timer
 );
 
-logic [7:0] note_addr_nxt;
-logic enable_out_nxt, enable_last, final_note_nxt;
+logic enable_out_nxt, enable_last;
 logic [15:0] timer_nxt;
+logic [7:0] note_addr_nxt;
+note_t current_note, current_note_nxt;
 
 enum logic {IDLE, PLAYING} state, state_nxt;
 
 always_ff @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         state      <= IDLE;
-        note_addr  <= '0;
         enable_out <= '0;
         enable_last<= '0;
         timer      <= '0;
-        final_note <= '0;
+        note_addr  <= '0;
+        current_note <= '0;
+        tick_out   <= '0;
     end else begin
         state      <= state_nxt;
-        note_addr  <= note_addr_nxt;
         enable_out <= enable_out_nxt;
         enable_last<= enable_in;
         timer      <= timer_nxt;
-        final_note <= final_note_nxt;
+        note_addr  <= note_addr_nxt;
+        current_note <= current_note_nxt;
+        tick_out   <= tick_in;
     end
 end
 
@@ -47,8 +50,8 @@ always_comb begin: state_blk
         IDLE: state_nxt = (enable_in && (!enable_last)) ? PLAYING : IDLE;
         PLAYING: begin
             if(enable_in) begin
-                if(tick) begin
-                    if((current_note.data == 4'hf) && timer >= current_note.waiting + current_note.duration - 1)
+                if(tick_in) begin
+                    if(final_note)
                         state_nxt = IDLE;
                     else state_nxt = PLAYING;
                 end
@@ -73,7 +76,7 @@ always_comb begin: timer_blk
         case(state)
             IDLE: timer_nxt = '0;
             PLAYING: begin
-                if(tick) begin
+                if(tick_in) begin
                     if(timer >= (current_note.duration + current_note.waiting - 1))
                         timer_nxt = '0;
                     else
@@ -92,8 +95,8 @@ always_comb begin: note_addr_blk
         case(state)
             IDLE: note_addr_nxt = '0;
             PLAYING: begin
-                if(tick) begin
-                    if(timer >= (current_note.duration + current_note.waiting - 1))
+                if(tick_in) begin
+                    if(timer == (current_note.duration + current_note.waiting - 1))
                         note_addr_nxt = note_addr + 1;
                 end
             end
@@ -102,22 +105,23 @@ always_comb begin: note_addr_blk
 
 end: note_addr_blk
 
-always_comb begin: final_note_blk
-    final_note_nxt = '0;
+always_comb begin: note_blk
+    current_note_nxt = current_note_nxt;
 
-    case(state)
-        IDLE: final_note_nxt = '0;
-        PLAYING: begin
-            if(enable_in) begin
-                if(tick) begin
-                    if((current_note.data == 4'hf) && timer >= current_note.waiting + current_note.duration - 1)
-                    final_note_nxt = '1;
-                    else final_note_nxt = '0;
+    if(enable_in) begin
+        case(state)
+            IDLE: current_note_nxt = coming_note[0];
+            PLAYING: begin
+                if(tick_in) begin
+                    if(timer >= (current_note.duration + current_note.waiting - 1))
+                        current_note_nxt = coming_note[1];
+                    else
+                        current_note_nxt = current_note;
                 end
-            end else final_note_nxt = '0;;
-        end
-    endcase
+            end
+        endcase
+    end else current_note_nxt = '0;
 
-end: final_note_blk
+end: note_blk
 
 endmodule

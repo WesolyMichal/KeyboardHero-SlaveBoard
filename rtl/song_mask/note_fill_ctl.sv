@@ -2,7 +2,6 @@ import game_pkg::*;
 import song_mask_pkg::*;
 
 module note_fill_ctl #(
-    parameter SCREEN_HEIGHT = 640,
     parameter INV_SCALE = 20,
     parameter MINIMUM_HEIGHT = INV_SCALE * 10
 )(
@@ -14,14 +13,18 @@ module note_fill_ctl #(
     input note_t current_note [0:2],
 
     output logic enable_out,
-    output logic note_fill[0:5][0:SCREEN_HEIGHT-1]
+    output logic note_fill[0:5][0:SCREEN_HEIGHT-1],
+
+    vga_if.in vga_in,
+    vga_if.out vga_out
 );
 
 logic note_fill_nxt[0:5][0:SCREEN_HEIGHT-1];
 
 always_ff @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        note_fill <= '{0, 0, 0, 0, 0, 0};
+        foreach(note_fill[i, j])
+            note_fill[i][j] <= '0;
         enable_out<= '0;
     end else begin
         note_fill <= note_fill_nxt;
@@ -38,7 +41,8 @@ always_comb begin
     duration_remaining = (timer < current_note[0].waiting) ? current_note[0].duration : current_note[0].duration - (timer - current_note[0].waiting);
 
     if(!enable_in) begin
-        note_fill_nxt = '{0, 0, 0, 0, 0, 0};
+        foreach(note_fill_nxt[i, j])
+            note_fill_nxt[i][j] = '0;
     end else begin
         for(logic [2:0] column = 0; column < 6; column++) begin
             for(logic [11:0] y_pixel = 0; y_pixel < SCREEN_HEIGHT; y_pixel++) begin
@@ -97,5 +101,15 @@ always_comb begin
         end
     end
 end
+
+delay #(
+    .CLK_DEL(1),
+    .WIDTH(38)
+)vga_delay(
+    .clk,
+    .rst_n,
+    .din(vga_in),
+    .dout(vga_out)
+);
 
 endmodule

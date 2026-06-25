@@ -22,10 +22,26 @@ end
 
 always_ff @(posedge clk) begin
     case(song_select)
-        2'd0: note <= {song_0[note_addr], song_0[note_addr + 1], song_0[note_addr + 2]};
-        2'd1: note <= {song_1[note_addr], song_1[note_addr + 1], song_1[note_addr + 2]};
-        2'd2: note <= {song_2[note_addr], song_2[note_addr + 1], song_2[note_addr + 2]};
-        2'd3: note <= {song_3[note_addr], song_3[note_addr + 1], song_3[note_addr + 2]};
+        2'd0: begin
+            note[0] <= song_0[note_addr];
+            note[1] <= song_0[note_addr + 1];
+            note[2] <= song_0[note_addr + 2];
+        end
+        2'd1: begin
+            note[0] <= song_1[note_addr];
+            note[1] <= song_1[note_addr + 1];
+            note[2] <= song_1[note_addr + 2];
+        end
+        2'd2: begin
+            note[0] <= song_2[note_addr];
+            note[1] <= song_2[note_addr + 1];
+            note[2] <= song_2[note_addr + 2];
+        end
+        2'd3: begin
+            note[0] <= song_3[note_addr];
+            note[1] <= song_3[note_addr + 1];
+            note[2] <= song_3[note_addr + 2];
+        end
     endcase
 end
 

@@ -38,7 +38,7 @@ logic [11:0] rgb_nxt;
 
 logic [15:0] hoff_mibombo, voff_mibombo;
 logic [15:0] mibombo_addr;
-logic [1:0]  mibombo_pixel; 
+logic mibombo_pixel; 
 
 logic [1:0] enable_reg;
 

@@ -10,7 +10,7 @@ package song_mask_pkg;
 
     localparam NOTE_DISPLAY_HEIGHT = 640;
 
-    localparam COLUMN_XPOS[0:5] = {300, 350, 400, 450, 500, 650};
+    localparam [10:0] COLUMN_XPOS[0:5] = {300, 350, 400, 450, 500, 650};
 
     localparam [11:0] COLUMN_COLOURS [0:5] = {COLOUR_RED,
                                               COLOUR_GREEN,
@@ -20,5 +20,7 @@ package song_mask_pkg;
                                               COLOUR_CYAN};
 
     localparam COLUMN_WIDTH = 30;
+
+    localparam SCREEN_HEIGHT = 640;
 
 endpackage

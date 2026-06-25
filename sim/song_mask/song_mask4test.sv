@@ -1,30 +1,24 @@
 import game_pkg::*;
 
-module song_mask (
+module song_mask4test (
     input logic clk,
     input logic rst_n,
 
     input logic enable_mask_in,
     input logic [1:0] song_select, // Input to select the song from ROM
+    input logic [15:0] timer,
+    input logic [7:0] note_addr,
 
     vga_if.in vga_in,
-    vga_if.out vga_out,
-
-    output logic final_note
+    vga_if.out vga_out
 );
 
-wire logic [37:0] vga_del, vga_player, vga_fill;
+wire logic [37:0] vga_player, vga_fill;
 
-wire logic tick;
-wire logic enable_note_fill, enable_player, enable_outlogic;
+wire logic enable_note_fill, enable_outlogic;
 wire logic note_fill[0:5][0:639];
 
-wire logic [15:0] timer_n;
-
 note_t note_player [0:2];
-
-wire logic [1:0] song_select_del;
-
 
 delay #(
     .CLK_DEL(1),
@@ -33,39 +27,24 @@ delay #(
     .clk,
     .rst_n,
     .din(vga_in),
-    .dout(vga_del)
+    .dout(vga_player)
 );
 
 delay #(
     .CLK_DEL(1),
-    .WIDTH(2)
-)select_delay(
+    .WIDTH(1)
+)enable_delay(
     .clk,
     .rst_n,
-    .din(song_select),
-    .dout(song_select_del)
+    .din(enable_mask_in),
+    .dout(enable_note_fill)
 );
 
-timer u_ticker(
+song_rom rom(
     .clk,
-    .rst_n,
-    .enable(enable_mask_in),
-    .tick,
-    .enable_out(enable_player)
-);
-
-song_player u_song_player(
-    .clk,
-    .rst_n,
-    .song_select(song_select_del),
-    .enable_in(enable_player),
-    .enable_out(enable_note_fill),
-    .final_note,
-    .note_out(note_player),
-    .tick,
-    .timer(timer_n),
-    .vga_in(vga_del),
-    .vga_out(vga_player)
+    .note(note_player),
+    .note_addr,
+    .song_select
 );
 
 note_fill_ctl u_note_fill(
@@ -75,7 +54,7 @@ note_fill_ctl u_note_fill(
     .enable_in(enable_note_fill),
     .enable_out(enable_outlogic),
     .note_fill,
-    .timer(timer_n),
+    .timer,
     .vga_in(vga_player),
     .vga_out(vga_fill)
 );

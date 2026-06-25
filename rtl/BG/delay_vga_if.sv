@@ -1,8 +1,10 @@
-module delay_vga_if (
+module delay_vga_if #(
+    parameter CLK_DEL = 2
+)(
     input logic clk,
     input logic rst_n,
-    vga_if.in_bez_rgb vga_in,
-    vga_if.out_bez_rgb delay_vga_out
+    vga_if vga_in,
+    vga_if delay_vga_out
 );
 
 logic [10:0] d2_vcount, d2_hcount;
@@ -10,7 +12,7 @@ logic        d2_vsync, d2_hsync, d2_vblnk, d2_hblnk;
 
 delay  #(
         .WIDTH(26), 
-        .CLK_DEL(2)
+        .CLK_DEL(CLK_DEL)
     )u_vga_in_del2(
         .clk,
         .rst_n,
