@@ -6,11 +6,11 @@ module song_mask4test (
 
     input logic enable_mask_in,
     input logic [1:0] song_select, // Input to select the song from ROM
-    input logic [15:0] timer,
+    input logic [31:0] timer,
     input logic [7:0] note_addr,
 
-    vga_if.in vga_in,
-    vga_if.out vga_out
+    input vga_if vga_in,
+    output vga_if vga_out
 );
 
 wire logic [37:0] vga_player, vga_fill;
@@ -47,7 +47,9 @@ song_rom rom(
     .song_select
 );
 
-note_fill_ctl u_note_fill(
+note_fill_ctl #(
+    .INV_SCALE(2)
+) u_note_fill(
     .clk,
     .rst_n,
     .current_note(note_player),

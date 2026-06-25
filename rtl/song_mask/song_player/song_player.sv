@@ -12,17 +12,17 @@ module song_player(
     output logic final_note,
 
     output logic enable_out,
-    output logic [15:0] timer,
+    output logic [31:0] timer,
     output note_t note_out [0:2],
 
-    vga_if.in vga_in,
-    vga_if.out vga_out
+    input vga_if vga_in,
+    output vga_if vga_out
 );
 
 wire logic [1:0] song_select_del;
 wire logic enable_ctl, enable_ctl_del;
 wire logic tick_ctl, tick_ctl_del;
-wire logic [15:0] timer_ctl, timer_ctl_del;
+wire logic [31:0] timer_ctl, timer_ctl_del;
 logic [7:0] note_addr;
 note_t note [0:2];
 
@@ -58,7 +58,7 @@ song_rom rom(
 
 delay #(
     .CLK_DEL(1),
-    .WIDTH(18)
+    .WIDTH(34)
 ) mid_del(
     .clk,
     .rst_n,

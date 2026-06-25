@@ -1,9 +1,7 @@
 sv work ../../rtl/vga_pkg.sv \
-        ../../rtl/vga_if.sv \
         ../../rtl/vga_timing.sv \
         ../../rtl/BG/song_bg.sv \
         ../../rtl/delay.sv \
-        ../../rtl/BG/delay_vga_if.sv \
         ../../rtl/rom/font_rom.sv \
         ../../rtl/rom/mibombo_rom.sv \
         ../common/tiff_writer.sv \

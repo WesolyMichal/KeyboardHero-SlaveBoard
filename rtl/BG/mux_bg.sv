@@ -1,3 +1,5 @@
+import vga_pkg::*;
+
 module mux_bg (
     input logic clk,
     input logic rst_n,
@@ -11,9 +13,9 @@ module mux_bg (
     input logic enable_endscreen,
     input logic [11:0] rgb_endscreen,
 
-    vga_if.in_bez_rgb delay_vga_in,
+    input vga_if delay_vga_in,
     output logic enable_song_out,
-    vga_if.out vga_out
+    output vga_if vga_out
 );
 
 logic [11:0] rgb_nxt;

@@ -1,3 +1,5 @@
+import vga_pkg::*;
+
 module start_bg_tb;
 
     timeunit 1ns;
@@ -19,11 +21,11 @@ module start_bg_tb;
     logic clk, rst_n;
     wire vs, hs;
     wire [3:0] r, g, b;
+    wire [11:0] rgb_out_bg;
+
+    logic enable_in, enable_out;
+
     logic [7:0] button;
-    wire [11:0] rgb_out_start_bg;
-
-    logic enable_start_in, enable_start_out;
-
 
     /**
      * Clock generation
@@ -35,10 +37,7 @@ module start_bg_tb;
     end
 
     //inicjalizacja interface in i out
-    vga_if vga_in_if();
-    vga_if vga_out_if();
-    vga_if vga_in_bez_rgb_if();
-    vga_if vga_out_bez_rgb_if();
+    vga_if vga_tim, vga_tim_del, vga_bg;
 
     /**
      * Submodules instances
@@ -46,36 +45,34 @@ module start_bg_tb;
     vga_timing u_vga_timing (
         .clk(clk),
         .rst_n(rst_n),
-        .vcount(vga_in_bez_rgb_if.vcount),
-        .vsync(vga_in_bez_rgb_if.vsync),
-        .vblnk(vga_in_bez_rgb_if.vblnk),
-        .hcount(vga_in_bez_rgb_if.hcount),
-        .hsync(vga_in_bez_rgb_if.hsync),
-        .hblnk(vga_in_bez_rgb_if.hblnk)
+        .vga_out(vga_tim)
     );
 
-    delay_vga_if u_delay_vga_if (
+    delay #(
+        .CLK_DEL(2),
+        .WIDTH(38)
+    ) u_delay_vga_tim (
         .clk(clk),
         .rst_n(rst_n),
-        .vga_in(vga_in_bez_rgb_if),
-        .delay_vga_out(vga_out_bez_rgb_if)
+        .din(vga_tim),
+        .dout(vga_tim_del)
     );
 
-    start_bg dut (
-        .clk(clk),
-        .rst_n(rst_n),
-        .vga_in(vga_in_bez_rgb_if.in),
-        .rgb_out_start_bg(rgb_out_start_bg),
-        .button(button),
-        .enable_start_in(enable_start_in),
-        .enable_start_out(enable_start_out)
+    start_bg dut(
+        .clk,
+        .rst_n,
+        .enable_start_in(enable_in),
+        .enable_start_out(enable_out),
+        .rgb_out_start_bg(rgb_out_bg),
+        .vga_in(vga_tim),
+        .button
     );
 
-    assign vs = vga_out_bez_rgb_if.vsync;
-    assign hs = vga_out_bez_rgb_if.hsync;
-    assign r = rgb_out_start_bg[11:8];
-    assign g = rgb_out_start_bg[7:4];
-    assign b = rgb_out_start_bg[3:0];
+    assign vs = vga_tim_del.vsync;
+    assign hs = vga_tim_del.hsync;
+    assign r = rgb_out_bg[11:8];
+    assign g = rgb_out_bg[7:4];
+    assign b = rgb_out_bg[3:0];
 
     tiff_writer #(
         .XDIM(16'd1344),
@@ -97,11 +94,11 @@ module start_bg_tb;
     initial begin
         rst_n = 1'b1;
         button = 8'h5A;
-        
+
         #(RST_START_TIME) rst_n = 1'b0;
         #(RST_ACTIVE_TIME) rst_n = 1'b1;
 
-        enable_start_in = 1'b0;
+        enable_in = 1'b1;
 
         $display("If simulation ends before the testbench");
         $display("completes, use the menu option to run all.");

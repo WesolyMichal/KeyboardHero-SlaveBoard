@@ -21,9 +21,9 @@ logic enable_start, enable_song_choose, enable_song, enable_endscreen;
 
 
 // --- Instancja interfejsu VGA ---
-vga_if vga_if_timing();
-vga_if vga_if_out_dut();
-vga_if vga_if_inst();
+vga_if vga_if_timing;
+vga_if vga_if_out_dut;
+vga_if vga_if_inst;
 
 // --- Generator zegara ---
 initial begin
@@ -34,12 +34,7 @@ end
 vga_timing u_vga_timing (
     .clk(clk),
     .rst_n(rst_n),
-    .hcount(vga_if_timing.hcount),
-    .vcount(vga_if_timing.vcount),
-    .hsync(vga_if_timing.hsync),
-    .vsync(vga_if_timing.vsync),
-    .hblnk(vga_if_timing.hblnk),
-    .vblnk(vga_if_timing.vblnk)
+    .vga_out(vga_if_timing)
 );
 
 

@@ -7,8 +7,8 @@ module song_mask (
     input logic enable_mask_in,
     input logic [1:0] song_select, // Input to select the song from ROM
 
-    vga_if.in vga_in,
-    vga_if.out vga_out,
+    input vga_if vga_in,
+    output vga_if vga_out,
 
     output logic final_note
 );
@@ -19,7 +19,7 @@ wire logic tick;
 wire logic enable_note_fill, enable_player, enable_outlogic;
 wire logic note_fill[0:5][0:639];
 
-wire logic [15:0] timer_n;
+wire logic [31:0] timer_n;
 
 note_t note_player [0:2];
 

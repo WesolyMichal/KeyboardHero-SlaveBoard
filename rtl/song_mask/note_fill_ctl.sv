@@ -9,14 +9,14 @@ module note_fill_ctl #(
     input logic rst_n,
     input logic enable_in,
     
-    input logic [15:0] timer,
+    input logic [31:0] timer,
     input note_t current_note [0:2],
 
     output logic enable_out,
     output logic note_fill[0:5][0:SCREEN_HEIGHT-1],
 
-    vga_if.in vga_in,
-    vga_if.out vga_out
+    input vga_if vga_in,
+    output vga_if vga_out
 );
 
 logic note_fill_nxt[0:5][0:SCREEN_HEIGHT-1];
@@ -52,10 +52,10 @@ always_comb begin
                 if(current_note[0].buttons[column]) begin
 
                     if((y_pixel * INV_SCALE >= waiting_remaining 
-                                            - MINIMUM_HEIGHT)
+                                            - ((current_note[0].long[column]) ? 0 : MINIMUM_HEIGHT) )
 
                     && (y_pixel * INV_SCALE <  waiting_remaining 
-                                            + MINIMUM_HEIGHT 
+                                            + ((current_note[0].long[column]) ? 0 : MINIMUM_HEIGHT)
                                             + (current_note[0].long[column] ? duration_remaining : 0) ) ) 
 
                         note_fill_nxt[column][y_pixel] = 1'b1;
@@ -66,12 +66,12 @@ always_comb begin
                     if((y_pixel * INV_SCALE >= waiting_remaining 
                                             + duration_remaining 
                                             + current_note[1].waiting 
-                                            - MINIMUM_HEIGHT)
+                                            - ((current_note[1].long[column]) ? 0 : MINIMUM_HEIGHT))
 
                     && (y_pixel * INV_SCALE <  waiting_remaining 
                                             + duration_remaining
                                             + current_note[1].waiting 
-                                            + MINIMUM_HEIGHT 
+                                            + ((current_note[1].long[column]) ? 0 : MINIMUM_HEIGHT) 
                                             + (current_note[1].long[column] ? current_note[1].duration : 0) ) ) 
 
                         note_fill_nxt[column][y_pixel] = 1'b1;
@@ -84,14 +84,14 @@ always_comb begin
                                             + current_note[1].waiting
                                             + current_note[1].duration
                                             + current_note[2].waiting
-                                            - MINIMUM_HEIGHT)
+                                            - ((current_note[2].long[column]) ? 0 : MINIMUM_HEIGHT))
 
                     && (y_pixel * INV_SCALE <  waiting_remaining 
                                             + duration_remaining
                                             + current_note[1].waiting
                                             + current_note[1].duration
                                             + current_note[2].waiting 
-                                            + MINIMUM_HEIGHT 
+                                            + ((current_note[2].long[column]) ? 0 : MINIMUM_HEIGHT)
                                             + (current_note[2].long[column] ? current_note[2].duration : 0) ) ) 
 
                         note_fill_nxt[column][y_pixel] = 1'b1;

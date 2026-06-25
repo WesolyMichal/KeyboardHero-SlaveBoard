@@ -13,11 +13,11 @@ module song_player_ctl(
     
     output logic [7:0] note_addr,
     output logic enable_out,
-    output logic [15:0] timer
+    output logic [31:0] timer
 );
 
 logic enable_out_nxt, enable_last;
-logic [15:0] timer_nxt;
+logic [31:0] timer_nxt;
 logic [7:0] note_addr_nxt;
 note_t current_note, current_note_nxt;
 

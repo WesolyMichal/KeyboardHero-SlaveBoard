@@ -9,8 +9,8 @@ module top_bg (
     input logic enable_song,
     input logic enable_endscreen,
 
-    vga_if.in_bez_rgb vga_in,
-    vga_if.out vga_out
+    input vga_if vga_in,
+    output vga_if vga_out
 );
 
 import vga_pkg::*;
@@ -18,7 +18,7 @@ import vga_pkg::*;
 wire enable_start_out, enable_choose_out, enable_song_out, enable_endscreen_out;
 wire [11:0] rgb_out_start_bg, rgb_out_choose_bg, rgb_out_song_bg, rgb_out_endscreen_bg; 
 
-vga_if delay_vga_out (); 
+vga_if delay_vga_out; 
 
 start_bg u_start_bg (
     .clk,
@@ -60,11 +60,14 @@ endscreen_bg u_endscreen_bg(
     .rgb_out_endscreen_bg
 );
 
-delay_vga_if u_delay_vga_if(
+delay #(
+    .CLK_DEL(2),
+    .WIDTH(38)
+) u_delay_vga(
     .clk,
     .rst_n,
-    .vga_in(vga_in),
-    .delay_vga_out(delay_vga_out)
+    .din(vga_in),
+    .dout(delay_vga_out)
 );
 
 mux_bg u_mux_bg (

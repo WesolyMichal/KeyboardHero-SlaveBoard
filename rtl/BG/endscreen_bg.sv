@@ -1,10 +1,12 @@
+import vga_pkg::*;
+
 module endscreen_bg (
     input logic clk,
     input logic rst_n,
     input logic [15:0] end_score_in,
     input logic enable_endscreen_in,
 
-    vga_if.in vga_in,
+    input vga_if vga_in,
 
     output logic [11:0] rgb_out_endscreen_bg,
     output logic enable_endscreen_out

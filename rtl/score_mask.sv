@@ -2,8 +2,8 @@ module score_mask (
     input logic clk,
     input logic rst_n,
 
-    vga_if.in  vga_in,
-    vga_if.out vga_out,
+    input vga_if  vga_in,
+    output vga_if vga_out,
 
     input logic enable_score_in,
     output logic enable_score_out,

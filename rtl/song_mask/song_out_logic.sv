@@ -6,8 +6,8 @@ module song_out_logic(
     input logic enable_in,
 
     input logic note_fill[0:5][0:639],
-    vga_if.in vga_in,
-    vga_if.out vga_out
+    input vga_if vga_in,
+    output vga_if vga_out
 );
 
 logic [11:0] rgb_nxt;

@@ -3,6 +3,8 @@ module song_mask_tb;
     timeunit 1ns;
     timeprecision 1ps;
 
+    import vga_pkg::*;
+
     /**
      *  Local parameters
      */
@@ -19,9 +21,9 @@ module song_mask_tb;
     logic clk, rst_n;
     wire vs, hs;
     wire [3:0] r, g, b;
-    wire [11:0] rgb_out_song_bg;
+    wire [11:0] rgb_out_bg;
 
-    logic enable_song_in, enable_song_mask;
+    logic enable_in, enable_song_mask;
 
 
     /**
@@ -34,14 +36,9 @@ module song_mask_tb;
     end
 
     //inicjalizacja interface in i out
-    vga_if vga_in_if();
-    vga_if vga_out_if();
-    vga_if vga_in_bez_rgb_if();
-    vga_if vga_out_bez_rgb_if();
+    vga_if vga_tim, vga_tim_del, vga_mask;
 
-    vga_if vga_out(); 
-
-    vga_if vga_smask();
+    vga_if vga_out; 
 
     /*
      * Inicjalizacja wejsc
@@ -49,7 +46,7 @@ module song_mask_tb;
 
     logic [7:0] note_addr;
     logic [1:0] song_select;
-    logic [15:0] timer;
+    logic [31:0] timer;
 
     /**
      * Submodules instances
@@ -57,51 +54,42 @@ module song_mask_tb;
     vga_timing u_vga_timing (
         .clk(clk),
         .rst_n(rst_n),
-        .vcount(vga_in_bez_rgb_if.vcount),
-        .vsync(vga_in_bez_rgb_if.vsync),
-        .vblnk(vga_in_bez_rgb_if.vblnk),
-        .hcount(vga_in_bez_rgb_if.hcount),
-        .hsync(vga_in_bez_rgb_if.hsync),
-        .hblnk(vga_in_bez_rgb_if.hblnk)
+        .vga_out(vga_tim)
     );
 
-    delay_vga_if #(
-        .CLK_DEL(1)
-    ) vga_del (
+    delay #(
+        .CLK_DEL(2),
+        .WIDTH(38)
+    ) delay_vga (
         .clk,
         .rst_n,
-        .vga_in(vga_in_bez_rgb_if),
-        .delay_vga_out(vga_out_bez_rgb_if)
+        .din(vga_tim),
+        .dout(vga_tim_del)
     );
 
-    song_bg u_song_bg (
-        .clk(clk),
-        .rst_n(rst_n),
-        .vga_in(vga_in_bez_rgb_if.in),
-        .rgb_out_song_bg(rgb_out_song_bg),
-        .enable_song_in(enable_song_in),
-        .enable_song_out(enable_song_mask)
+    song_bg u_song_bg(
+        .clk,
+        .rst_n,
+        .enable_song_in(enable_in),
+        .enable_song_out(enable_song_mask),
+        .rgb_out_song_bg(rgb_out_bg),
+        .vga_in(vga_tim)
     );
 
     always_comb begin
-        vga_smask.rgb = rgb_out_song_bg;
-        vga_smask.hblnk = vga_out_bez_rgb_if.hblnk;
-        vga_smask.hcount = vga_out_bez_rgb_if.vcount;
-        vga_smask.hsync = vga_out_bez_rgb_if.hsync;
-        vga_smask.vblnk = vga_out_bez_rgb_if.vblnk;
-        vga_smask.vcount = vga_out_bez_rgb_if.vcount;
-        vga_smask.vsync = vga_out_bez_rgb_if.vsync;
+        vga_mask = vga_tim_del;
+        vga_mask.rgb = rgb_out_bg;
     end
 
     song_mask4test dut(
         .clk,
         .rst_n,
+        .vga_in(vga_mask),
+        .vga_out,
         .enable_mask_in(enable_song_mask),
         .note_addr,
         .song_select,
-        .timer,
-        .vga_in(vga_smask),
-        .vga_out
+        .timer
     );
 
     assign vs = vga_out.vsync;
@@ -109,12 +97,6 @@ module song_mask_tb;
     assign r = vga_out.rgb[11:8];
     assign g = vga_out.rgb[7:4];
     assign b = vga_out.rgb[3:0];
-
-    // assign vs = vga_smask.vsync;
-    // assign hs = vga_smask.hsync;
-    // assign r = vga_smask.rgb[11:8];
-    // assign g = vga_smask.rgb[7:4];
-    // assign b = vga_smask.rgb[3:0];
 
     tiff_writer #(
         .XDIM(16'd1344),
@@ -138,13 +120,13 @@ module song_mask_tb;
         
         #(RST_START_TIME) rst_n = 1'b0;
 
-        song_select = '0;
-        timer = '0;
-        note_addr = 8'h01;
+        song_select = 2'd0;
+        timer = 32'h0500;
+        note_addr = 8'h00;
 
         #(RST_ACTIVE_TIME) rst_n = 1'b1;
 
-        enable_song_in = 1'b1;
+        enable_in = 1'b1;
 
         $display("If simulation ends before the testbench");
         $display("completes, use the menu option to run all.");

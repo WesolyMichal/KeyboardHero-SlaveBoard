@@ -22,7 +22,7 @@ assign dout = del_mem[CLK_DEL-1];
  * -------------------------------------------------------------------------- */
 always_ff @(posedge clk ) begin //or negedge rst_n
     if(!rst_n) begin
-        //del_mem[0] <= 0;
+        del_mem[0] <= 0;
     end else begin
         del_mem[0] <= din;
     end

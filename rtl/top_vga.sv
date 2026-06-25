@@ -16,24 +16,19 @@ module top_vga (
      */
 
     // VGA signals from timing
-    wire [10:0] vcount_tim, hcount_tim;
-    wire vsync_tim, hsync_tim;
-    wire vblnk_tim, hblnk_tim;
+    wire vga_if vga_tim;
 
     // VGA signals from background
-    wire [10:0] vcount_bg, hcount_bg;
-    wire vsync_bg, hsync_bg;
-    wire vblnk_bg, hblnk_bg;
-    wire [11:0] rgb_bg;
+    wire vga_if vga_bg;
 
 
     /**
      * Signals assignments
      */
 
-    assign vs = vsync_bg;
-    assign hs = hsync_bg;
-    assign {r,g,b} = rgb_bg;
+    assign vs = vga_bg.vsync;
+    assign hs = vga_bg.hsync;
+    assign {r,g,b} = vga_bg.rgb;
 
 
     /**
@@ -43,12 +38,7 @@ module top_vga (
     vga_timing u_vga_timing (
         .clk,
         .rst_n,
-        .vcount (vcount_tim),
-        .vsync  (vsync_tim),
-        .vblnk  (vblnk_tim),
-        .hcount (hcount_tim),
-        .hsync  (hsync_tim),
-        .hblnk  (hblnk_tim)
+        .vga_out(vga_tim)
     );
 
 

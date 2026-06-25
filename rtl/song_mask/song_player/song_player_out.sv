@@ -11,8 +11,8 @@ module song_player_out(
     input logic enable_in,
     output logic enable_out,
     
-    input logic [15:0] timer_in,
-    output logic [15:0] timer_out,
+    input logic [31:0] timer_in,
+    output logic [31:0] timer_out,
 
     output logic final_note
 );
