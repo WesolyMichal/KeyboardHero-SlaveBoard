@@ -1,0 +1,14 @@
+sv work ../../rtl/game_pkg.sv \
+        ../../rtl/vga_pkg.sv \
+        ../../rtl/delay.sv \
+        ../../rtl/vga_timing.sv \
+        ../../rtl/rom/song_rom.sv \
+        ../../rtl/song_mask/song_mask_pkg.sv \
+        ../../rtl/song_mask/song_player/song_player_ctl.sv \
+        ../../rtl/song_mask/song_player/song_player_out.sv \
+        ../../rtl/song_mask/song_player/song_player.sv \
+        ../../rtl/song_mask/note_fill_ctl.sv \
+        ../../rtl/song_mask/song_out_logic.sv \
+        ../../rtl/song_mask/song_mask.sv \
+        ../../rtl/song_mask/timer.sv \
+        song_playing_tb.sv

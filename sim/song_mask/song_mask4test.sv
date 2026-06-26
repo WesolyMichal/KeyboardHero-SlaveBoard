@@ -55,19 +55,10 @@ note_fill_ctl #(
     .current_note(note_player),
     .enable_in(enable_note_fill),
     .enable_out(enable_outlogic),
-    .note_fill,
     .timer,
     .vga_in(vga_player),
-    .vga_out(vga_fill)
-);
-
-song_out_logic u_song_mask_out(
-    .clk,
-    .rst_n,
-    .enable_in(enable_outlogic),
-    .note_fill,
-    .vga_in(vga_fill),
     .vga_out
 );
+
 
 endmodule

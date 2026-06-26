@@ -1,6 +1,8 @@
 import game_pkg::*;
 
-module song_mask (
+module song_mask #(
+    parameter TICK_FREQUENCY = 1000
+)(
     input logic clk,
     input logic rst_n,
 
@@ -46,7 +48,9 @@ delay #(
     .dout(song_select_del)
 );
 
-timer u_ticker(
+timer #(
+    .FREQUENCY(TICK_FREQUENCY)
+) u_ticker(
     .clk,
     .rst_n,
     .enable(enable_mask_in),
@@ -74,19 +78,10 @@ note_fill_ctl u_note_fill(
     .current_note(note_player),
     .enable_in(enable_note_fill),
     .enable_out(enable_outlogic),
-    .note_fill,
     .timer(timer_n),
     .vga_in(vga_player),
-    .vga_out(vga_fill)
-);
-
-song_out_logic u_song_mask_out(
-    .clk,
-    .rst_n,
-    .enable_in(enable_outlogic),
-    .note_fill,
-    .vga_in(vga_fill),
     .vga_out
 );
+
 
 endmodule

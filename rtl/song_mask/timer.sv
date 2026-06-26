@@ -10,7 +10,7 @@ module timer #(
     output logic enable_out
 );
 
-localparam CLK_FREQUENCY = 40_000_000;
+localparam CLK_FREQUENCY = 65_000_000;
 
 logic [31:0] count_nxt;
 logic tick_nxt;

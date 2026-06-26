@@ -134,8 +134,12 @@ module song_mask_tb;
 
         wait (vs == 1'b0);
         @(negedge vs) $display("Info: negedge VS at %t",$time);
-        @(negedge vs) $display("Info: negedge VS at %t",$time);
-
+        note_addr++;
+        timer = '0;
+        repeat(20) begin
+            @(negedge vs) $display("Info: negedge VS at %t",$time);
+            note_addr++;
+        end
         // End the simulation.
         $display("Simulation is over, check the waveforms.");
         $finish;
