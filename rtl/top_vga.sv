@@ -22,6 +22,11 @@ module top_vga (
    // wire [7:0] UART_in;
     wire enable_song_mux;
 
+    // VGA signals from timing
+    wire vga_if vga_tim;
+
+    // VGA signals from background
+    wire vga_if vga_bg;
 
     // VGA interfaces
     vga_if vga_out_timing_if();
@@ -30,11 +35,10 @@ module top_vga (
     /**
      * Signals assignments
      */
-    assign vs = vga_out_top_bg_if.vsync;
-    assign hs = vga_out_top_bg_if.hsync;
-    assign r = vga_out_top_bg_if.rgb[11:8];
-    assign g = vga_out_top_bg_if.rgb[7:4];
-    assign b = vga_out_top_bg_if.rgb[3:0];
+
+    assign vs = vga_bg.vsync;
+    assign hs = vga_bg.hsync;
+    assign {r,g,b} = vga_bg.rgb;
 
 
     /**
@@ -56,12 +60,7 @@ module top_vga (
     vga_timing u_vga_timing (
         .clk,
         .rst_n,
-        .vcount (vga_out_timing_if.vcount),
-        .vsync  (vga_out_timing_if.vsync),
-        .vblnk  (vga_out_timing_if.vblnk),
-        .hcount (vga_out_timing_if.hcount),
-        .hsync  (vga_out_timing_if.hsync),
-        .hblnk  (vga_out_timing_if.hblnk)
+        .vga_out(vga_tim)
     );
 
     top_bg u_top_bg (

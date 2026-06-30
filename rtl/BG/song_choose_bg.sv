@@ -1,10 +1,12 @@
+import vga_pkg::*;
+
 module song_choose_bg (
     input logic clk,
     input logic rst_n,
     input logic enable_choose_in,
     input logic [7:0] button,
 
-    vga_if.in vga_in,
+    input vga_if vga_in,
     
     output logic [11:0] rgb_out_choose_bg,
     output logic enable_choose_out,

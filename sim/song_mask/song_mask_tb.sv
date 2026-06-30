@@ -1,123 +1,148 @@
 module song_mask_tb;
 
-timeunit 1ns;
-timeprecision 1ps;
+    timeunit 1ns;
+    timeprecision 1ps;
 
-// --- Parametry symulacji ---
-localparam real CLK_PERIOD = 1000.0 / 65.0;
+    import vga_pkg::*;
 
-// --- Parametry VGA 1024x768 @ 60Hz ---
-localparam H_DISPLAY = 1024;
-localparam H_FP      = 24;
-localparam H_SYNC    = 136;
-localparam H_BP      = 160;
-localparam H_TOTAL   = H_DISPLAY + H_FP + H_SYNC + H_BP; // 1344
+    /**
+     *  Local parameters
+     */
 
-localparam V_DISPLAY = 768;
-localparam V_FP      = 3;
-localparam V_SYNC    = 6;
-localparam V_BP      = 29;
-localparam V_TOTAL   = V_DISPLAY + V_FP + V_SYNC + V_BP; // 806
+    localparam real CLK_PERIOD = 15.3846;     // ok.65 MHz
+    localparam RST_START_TIME = 30;
+    localparam RST_ACTIVE_TIME = 30;
 
-// --- Sygnały testowe ---
-logic clk;
-logic rst_n;
-logic enable, enable_song_bg, enable_song_mux;
-logic [1:0] song_select;
 
-wire [11:0] rgb_out_song;
+    /**
+     * Local variables and signals
+     */
 
-// --- Instancja interfejsu VGA ---
-vga_if vga_if_timing();
-vga_if delay_vga_if();
-vga_if vga_if_inst();
-vga_if vga_if_out();
+    logic clk, rst_n;
+    wire vs, hs;
+    wire [3:0] r, g, b;
+    wire [11:0] rgb_out_bg;
 
-// --- Generator zegara ---
-initial begin
-    clk = 0;
-    forever #(CLK_PERIOD/2.0) clk = ~clk;
-end
+    logic enable_in, enable_song_mask;
 
-vga_timing u_vga_timing (
-    .clk(clk),
-    .rst_n(rst_n),
-    .hcount(vga_if_timing.hcount),
-    .vcount(vga_if_timing.vcount),
-    .hsync(vga_if_timing.hsync),
-    .vsync(vga_if_timing.vsync),
-    .hblnk(vga_if_timing.hblnk),
-    .vblnk(vga_if_timing.vblnk)
-);
 
-song_bg u_song_bg (
-    .clk(clk),
-    .rst_n(rst_n),
-    .enable_song_in(enable),
-    .vga_in(vga_if_timing),
-    .rgb_out_song_bg(rgb_out_song), 
-    .enable_song_out(enable_song_bg)
-);
+    /**
+     * Clock generation
+     */
 
-delay_vga_if u_delay_vga_if (
-    .clk(clk),
-    .rst_n(rst_n),
-    .vga_in(vga_if_timing),
-    .delay_vga_out(delay_vga_if)
-);
+    initial begin
+        clk = 1'b0;
+        forever #(CLK_PERIOD/2.0) clk = ~clk;
+    end
 
-mux_bg u_mux_bg (
-    .clk(clk),
-    .rst_n(rst_n),
-    .enable_song(enable_song_bg),
-    .rgb_song(rgb_out_song),
-    .delay_vga_in(delay_vga_if),
-    .vga_out(vga_if_inst),
-    .enable_song_out(enable_song_mux)
-);
+    //inicjalizacja interface in i out
+    vga_if vga_tim, vga_tim_del, vga_mask;
 
-// --- Instancja DUT (Device Under Test) ---
-song_mask dut (
-    .clk(clk),
-    .rst_n(rst_n),
-    .vga_in(vga_if_inst),
-    .vga_out(vga_if_out),
-    .enable_mask_in(enable_song_mux),
-    .song_select(song_select)
-);
+    vga_if vga_out; 
 
-// --- Główna sekwencja testowa ---
-initial begin
-    $display("--- Simple Testbench for song_mask started ---");
-    
-    // 1. Inicjalizacja i reset
-    rst_n = 1'b1;
-    enable = 0;
-    song_select = 0;
-    #1;
-    rst_n = 1'b0;
-    #(CLK_PERIOD * 10);
-    rst_n = 1'b1;
-    $display("[%0t] Reset finished.", $time);
+    /*
+     * Inicjalizacja wejsc
+     */
 
-    // 2. Włączenie modułu i rozpoczęcie testu
-    enable = 1;
-    song_select = 0;
-    $display("[%0t] Top-level enable is ON, playing song 0. Simulation will run for a fixed duration.", $time);
+    logic [7:0] note_addr;
+    logic [1:0] song_select;
+    logic [31:0] timer;
 
-    // 3. Pozwól symulacji działać przez określony czas (np. 2000 klatek)
-    // Czas trwania jednej klatki: H_TOTAL * V_TOTAL * CLK_PERIOD
-    #17ms;
+    /**
+     * Submodules instances
+     */
+    vga_timing u_vga_timing (
+        .clk(clk),
+        .rst_n(rst_n),
+        .vga_out(vga_tim)
+    );
 
-    // 4. Zakończenie symulacji
-    $display("[%0t] Simulation finished.", $time);
-    $finish;
-end
+    delay #(
+        .CLK_DEL(2),
+        .WIDTH(38)
+    ) delay_vga (
+        .clk,
+        .rst_n,
+        .din(vga_tim),
+        .dout(vga_tim_del)
+    );
 
-initial begin
-    // Zrzut przebiegów do pliku VCD dla wizualizacji
-    $dumpfile("song_mask_tb.vcd");
-    $dumpvars(0, song_mask_tb);
-end
+    song_bg u_song_bg(
+        .clk,
+        .rst_n,
+        .enable_song_in(enable_in),
+        .enable_song_out(enable_song_mask),
+        .rgb_out_song_bg(rgb_out_bg),
+        .vga_in(vga_tim)
+    );
+
+    always_comb begin
+        vga_mask = vga_tim_del;
+        vga_mask.rgb = rgb_out_bg;
+    end
+
+    song_mask4test dut(
+        .clk,
+        .rst_n,
+        .vga_in(vga_mask),
+        .vga_out,
+        .enable_mask_in(enable_song_mask),
+        .note_addr,
+        .song_select,
+        .timer
+    );
+
+    assign vs = vga_out.vsync;
+    assign hs = vga_out.hsync;
+    assign r = vga_out.rgb[11:8];
+    assign g = vga_out.rgb[7:4];
+    assign b = vga_out.rgb[3:0];
+
+    tiff_writer #(
+        .XDIM(16'd1344),
+        .YDIM(16'd806),
+        .FILE_DIR("../../results")
+    ) u_tiff_writer (
+        .clk(clk),
+        .r({r,r}), // fabricate an 8-bit value
+        .g({g,g}), // fabricate an 8-bit value
+        .b({b,b}), // fabricate an 8-bit value
+        .go(vs)
+    );
+
+
+    /**
+     * Main test
+     */
+
+    initial begin
+        rst_n = 1'b1;
+        
+        #(RST_START_TIME) rst_n = 1'b0;
+
+        song_select = 2'd2;
+        timer = 32'h0000;
+        note_addr = 8'h04;
+
+        #(RST_ACTIVE_TIME) rst_n = 1'b1;
+
+        enable_in = 1'b1;
+
+        $display("If simulation ends before the testbench");
+        $display("completes, use the menu option to run all.");
+        $display("Prepare to wait a long time...");
+
+        wait (vs == 1'b0);
+        @(negedge vs) $display("Info: negedge VS at %t",$time);
+        @(negedge vs) $display("Info: negedge VS at %t",$time);
+        // repeat(20) begin
+        //     @(negedge vs) $display("Info: negedge VS at %t",$time);
+        //     timer += 32'h0100;
+        // end
+        
+        // End the simulation.
+        $display("Simulation is over, check the waveforms.");
+        $finish;
+    end
 
 endmodule

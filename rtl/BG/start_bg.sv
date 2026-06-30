@@ -1,10 +1,12 @@
+import vga_pkg::*;
+
 module start_bg (
     input logic clk,
     input logic rst_n,
     input logic [7:0] button,
     input logic enable_start_in,
 
-    vga_if.in vga_in,
+    input vga_if vga_in,
 
     output logic [11:0] rgb_out_start_bg,
     output logic enable_start_out

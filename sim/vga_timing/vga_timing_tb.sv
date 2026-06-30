@@ -22,9 +22,7 @@ module vga_timing_tb;
     logic clk;
     logic rst_n;
 
-    wire [10:0] vcount, hcount;
-    wire        vsync,  hsync;
-    wire        vblnk,  hblnk;
+    wire vga_if vga_out;
 
 
     /**
@@ -56,12 +54,7 @@ module vga_timing_tb;
     vga_timing dut(
         .clk,
         .rst_n,
-        .vcount,
-        .vsync,
-        .vblnk,
-        .hcount,
-        .hsync,
-        .hblnk
+        .vga_out
     );
 
     /**
@@ -81,116 +74,116 @@ module vga_timing_tb;
         /* except during reset (optional): */
         disable iff (!rst_n || $realtime < RST_START_TIME)
         /* check whether this condition is true: */
-        hcount < HOR_TOTAL_TIME
+        vga_out.hcount < HOR_TOTAL_TIME
     ) else begin
         /* if condition is not true, display error message */
-        $error("hcount: max value exceeded");
+        $error("vga_out.hcount: max value exceeded");
     end
     
-    /* hcount : zero after max value */
+    /* vga_out.hcount : zero after max value */
     assert property (
         @(posedge clk)
-        hcount == (HOR_TOTAL_TIME - 1) |=> hcount == 0
+        vga_out.hcount == (HOR_TOTAL_TIME - 1) |=> vga_out.hcount == 0
     ) else begin
-        $error("hcount: return to 0 after expected max value failed");
+        $error("vga_out.hcount: return to 0 after expected max value failed");
     end
     
-    /* hcount : incrementation with every clock tick */
+    /* vga_out.hcount : incrementation with every clock tick */
     assert property (
         @(posedge clk)
         disable iff (!rst_n)
-        (hcount < HOR_TOTAL_TIME - 1) |=> (hcount == $past(hcount) + 1)
+        (vga_out.hcount < HOR_TOTAL_TIME - 1) |=> (vga_out.hcount == $past(vga_out.hcount) + 1)
     ) else begin
-        $error("hcount: increment at every clk failed");
+        $error("vga_out.hcount: increment at every clk failed");
     end
     
-    /* vcount : max value */
+    /* vga_out.vcount : max value */
     assert property (
         @(posedge clk)
         disable iff (!rst_n || $realtime < RST_START_TIME)
-        vcount < VER_TOTAL_TIME
+        vga_out.vcount < VER_TOTAL_TIME
     ) else begin
-        $error("vcount: max value exceeded");
+        $error("vga_out.vcount: max value exceeded");
     end
     
-    /* vcount : zero after max value */
+    /* vga_out.vcount : zero after max value */
     assert property (
         @(posedge clk)
-        vcount == (VER_TOTAL_TIME - 1) |=> ##(HOR_TOTAL_TIME - 1) vcount == 0
+        vga_out.vcount == (VER_TOTAL_TIME - 1) |=> ##(HOR_TOTAL_TIME - 1) vga_out.vcount == 0
     ) else begin
-        $error("vcount: return to 0 after expected max value failed");
+        $error("vga_out.vcount: return to 0 after expected max value failed");
     end
     
-    /* vcount : incrementation with every clock tick */
+    /* vga_out.vcount : incrementation with every clock tick */
     assert property (
         @(posedge clk)
-        (hcount == HOR_TOTAL_TIME - 1) && vcount < (VER_TOTAL_TIME - 1) |=> (vcount == $past(vcount) + 1)
+        (vga_out.hcount == HOR_TOTAL_TIME - 1) && vga_out.vcount < (VER_TOTAL_TIME - 1) |=> (vga_out.vcount == $past(vga_out.vcount) + 1)
     ) else begin
-        $error("vcount: increment at hcount reset failed");
+        $error("vga_out.vcount: increment at vga_out.hcount reset failed");
     end
     
-    /* hblnk : set */
+    /* vga_out.hblnk : set */
     assert property (
         @(posedge clk)
-        hcount >= HOR_BLANK_START && hcount < HOR_BLANK_START + HOR_BLANK_TIME - 1 |-> hblnk
+        vga_out.hcount >= HOR_BLANK_START && vga_out.hcount < HOR_BLANK_START + HOR_BLANK_TIME - 1 |-> vga_out.hblnk
     ) else begin
-        $error("hblnk: set failed");
+        $error("vga_out.hblnk: set failed");
     end
     
-    /* hblnk : clear */
+    /* vga_out.hblnk : clear */
     assert property (
         @(posedge clk)
-        hcount < HOR_BLANK_START |-> !hblnk
+        vga_out.hcount < HOR_BLANK_START |-> !vga_out.hblnk
     ) else begin
-        $error("hblnk: clear failed");
+        $error("vga_out.hblnk: clear failed");
     end
     
-    /* vblnk : set */
+    /* vga_out.vblnk : set */
     assert property (
         @(posedge clk)
-        vcount >= VER_BLANK_START && vcount < VER_BLANK_START + VER_BLANK_TIME - 1 |-> vblnk
+        vga_out.vcount >= VER_BLANK_START && vga_out.vcount < VER_BLANK_START + VER_BLANK_TIME - 1 |-> vga_out.vblnk
     ) else begin
-        $error("vblnk set failed");
+        $error("vga_out.vblnk set failed");
     end
     
-    /* vblnk : clear */
+    /* vga_out.vblnk : clear */
     assert property (
         @(posedge clk)
-        vcount < VER_BLANK_START |-> !vblnk
+        vga_out.vcount < VER_BLANK_START |-> !vga_out.vblnk
     ) else begin
-        $error("vblnk: clear failed");
+        $error("vga_out.vblnk: clear failed");
     end
     
-    /* hsync : set */
+    /* vga_out.hsync : set */
     assert property (
         @(posedge clk)
-        hcount >= HOR_SYNC_START && hcount < HOR_SYNC_START + HOR_SYNC_TIME - 1 |-> hsync
+        vga_out.hcount >= HOR_SYNC_START && vga_out.hcount < HOR_SYNC_START + HOR_SYNC_TIME - 1 |-> vga_out.hsync
     ) else begin
-        $error("hsync: set failed");
+        $error("vga_out.hsync: set failed");
     end
     
-    /* hsync : clear */
+    /* vga_out.hsync : clear */
     assert property (
         @(posedge clk)
-        (hcount < HOR_SYNC_START) || (hcount > (HOR_SYNC_START + HOR_SYNC_TIME - 1)) |-> !hsync
+        (vga_out.hcount < HOR_SYNC_START) || (vga_out.hcount > (HOR_SYNC_START + HOR_SYNC_TIME - 1)) |-> !vga_out.hsync
     ) else begin
-        $error("hsync: clear failed");
+        $error("vga_out.hsync: clear failed");
     end
     
-    /* vsync : set */
+    /* vga_out.vsync : set */
     assert property (
         @(posedge clk)
-        vcount >= VER_SYNC_START && vcount < VER_SYNC_START + VER_SYNC_TIME - 1 |-> vsync
+        vga_out.vcount >= VER_SYNC_START && vga_out.vcount < VER_SYNC_START + VER_SYNC_TIME - 1 |-> vga_out.vsync
     ) else begin
-        $error("vsync: set failed");
+        $error("vga_out.vsync: set failed");
     end
     
-    /* vsync : clear */
+    /* vga_out.vsync : clear */
     assert property (
         @(posedge clk)
-        vcount < VER_SYNC_START || vcount > VER_SYNC_START + VER_SYNC_TIME - 1 |-> !vsync
+        vga_out.vcount < VER_SYNC_START || vga_out.vcount > VER_SYNC_START + VER_SYNC_TIME - 1 |-> !vga_out.vsync
     ) else begin
-        $error("vsync: clear failed");
+        $error("vga_out.vsync: clear failed");
     end
 
 
@@ -203,9 +196,9 @@ module vga_timing_tb;
         @(negedge rst_n);
         @(posedge rst_n);
 
-        wait (vsync == 1'b0);
-        @(negedge vsync);
-        @(negedge vsync);
+        wait (vga_out.vsync == 1'b0);
+        @(negedge vga_out.vsync);
+        @(negedge vga_out.vsync);
         */
         #20ms;
         $finish;

@@ -35,12 +35,7 @@ module endscreen_bg_tb;
     end
 
     //inicjalizacja interface in i out
-    vga_if vga_in_if();
-    vga_if vga_out_if();
-    vga_if vga_in_bez_rgb_if();
-    vga_if vga_out_bez_rgb_if();
-
-    
+    vga_if vga_tim, vga_tim_del, vga_bg;
 
     /**
      * Submodules instances
@@ -48,33 +43,31 @@ module endscreen_bg_tb;
     vga_timing u_vga_timing (
         .clk(clk),
         .rst_n(rst_n),
-        .vcount(vga_in_bez_rgb_if.vcount),
-        .vsync(vga_in_bez_rgb_if.vsync),
-        .vblnk(vga_in_bez_rgb_if.vblnk),
-        .hcount(vga_in_bez_rgb_if.hcount),
-        .hsync(vga_in_bez_rgb_if.hsync),
-        .hblnk(vga_in_bez_rgb_if.hblnk)
+        .vga_out(vga_tim)
     );
 
-    delay_vga_if u_delay_vga_if (
+    delay #(
+        .CLK_DEL(2),
+        .WIDTH(38)
+    ) u_delay_vga_tim (
         .clk(clk),
         .rst_n(rst_n),
-        .vga_in(vga_in_bez_rgb_if),
-        .delay_vga_out(vga_out_bez_rgb_if)
+        .din(vga_tim),
+        .dout(vga_tim_del)
     );
 
     endscreen_bg dut (
         .clk(clk),
         .rst_n(rst_n),
-        .vga_in(vga_in_bez_rgb_if.in),
+        .vga_in(vga_tim),
         .rgb_out_endscreen_bg(rgb_out_endscreen_bg),
         .end_score_in(endscore),
         .enable_endscreen_in(enable_endscreen_in),
         .enable_endscreen_out(enable_endscreen_out)
     );
 
-    assign vs = vga_out_bez_rgb_if.vsync;
-    assign hs = vga_out_bez_rgb_if.hsync;
+    assign vs = vga_tim_del.vsync;
+    assign hs = vga_tim_del.hsync;
     assign r = rgb_out_endscreen_bg[11:8];
     assign g = rgb_out_endscreen_bg[7:4];
     assign b = rgb_out_endscreen_bg[3:0];

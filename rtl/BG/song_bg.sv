@@ -1,9 +1,11 @@
+import vga_pkg::*;
+
 module song_bg (
     input logic clk,
     input logic rst_n,
     input logic enable_song_in,
 
-    vga_if.in vga_in,
+    input vga_if vga_in,
 
     output logic [11:0] rgb_out_song_bg,
     output logic enable_song_out
@@ -38,7 +40,7 @@ logic [11:0] rgb_nxt;
 
 logic [15:0] hoff_mibombo, voff_mibombo;
 logic [15:0] mibombo_addr;
-logic [1:0]  mibombo_pixel; 
+logic mibombo_pixel; 
 
 logic [1:0] enable_reg;
 
