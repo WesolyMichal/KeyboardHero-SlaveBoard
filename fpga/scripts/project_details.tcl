@@ -31,17 +31,51 @@ set xdc_files {
 
 # Specify SystemVerilog design files location   -- EDIT
 set sv_files {
+    ../rtl/BG/endscreen_bg.sv
+    ../rtl/BG/mux_bg.sv
+    ../rtl/BG/song_bg.sv
+    ../rtl/BG/song_choose_bg.sv
+    ../rtl/BG/start_bg.sv
+    ../rtl/BG/top_bg.sv
+    ../rtl/rom/agh_image_rom.sv
+    ../rtl/rom/enter_button_rom.sv
+    ../rtl/rom/font_rom.sv
+    ../rtl/rom/mibombo_rom.sv
+    ../rtl/rom/song_rom.sv
+    ../rtl/rom/star_rom.sv
+    ../rtl/song_mask/song_player/song_player.sv
+    ../rtl/song_mask/song_player/song_player_ctl.sv
+    ../rtl/song_mask/song_player/song_player_out.sv
+    ../rtl/song_mask/button_mask.sv
+    ../rtl/song_mask/note_fill_ctl.sv
+    ../rtl/song_mask/score_counter.sv
+    ../rtl/song_mask/score_mask.sv
+    ../rtl/song_mask/score_mask_pkg.sv
+    ../rtl/song_mask/song_mask.sv
+    ../rtl/song_mask/timer.sv
+    ../rtl/comm_decoder.sv
+    ../rtl/delay.sv
+    ../rtl/game_pkg.sv
+    ../rtl/slave_FSM.sv
+    ../rtl/top_bg.sv
+    ../rtl/top_slave.sv
     ../rtl/vga_pkg.sv
     ../rtl/vga_timing.sv
-    ../rtl/draw_bg.sv
-    ../rtl/top_vga.sv
     rtl/top_vga_basys3.sv
 }
 
 # Specify Verilog design files location         -- EDIT
-# set verilog_files {
-#     path/to/file.v
-# }
+set verilog_files {
+    ../rtl/uart/debounce.v
+    ../rtl/uart/disp_hex_mux.v
+    ../rtl/uart/fifo.v
+    ../rtl/uart/flag_buf.v
+    ../rtl/uart/mod_m_counter.v
+    ../rtl/uart/uart_reader.v
+    ../rtl/uart/uart_rx.v
+    ../rtl/uart/uart_tx.v
+    ../rtl/uart/uart.v
+}
 
 # Specify VHDL design files location            -- EDIT
 # set vhdl_files {
@@ -49,6 +83,14 @@ set sv_files {
 # }
 
 # Specify files for a memory initialization     -- EDIT
-# set mem_files {
-#    path/to/file.data
-# }
+set mem_files {
+   ../rtl/data/agh_image_rom.data
+   ../rtl/data/enter.data
+   ../rtl/data/mibombo_color.data
+   ../rtl/data/mibombo.data
+   ../rtl/data/star.data
+   ../rtl/songs/song_0.data
+   ../rtl/songs/song_1.data
+   ../rtl/songs/song_2.data
+   ../rtl/songs/song_3.data
+}
