@@ -25,7 +25,7 @@ module start_bg_tb;
 
     logic enable_in, enable_out;
 
-    logic [7:0] button;
+    logic enter;
 
     /**
      * Clock generation
@@ -65,7 +65,7 @@ module start_bg_tb;
         .enable_start_out(enable_out),
         .rgb_out_start_bg(rgb_out_bg),
         .vga_in(vga_tim),
-        .button
+        .enter
     );
 
     assign vs = vga_tim_del.vsync;
@@ -93,7 +93,7 @@ module start_bg_tb;
 
     initial begin
         rst_n = 1'b1;
-        button = 8'h5A;
+        enter = 1'b1;
 
         #(RST_START_TIME) rst_n = 1'b0;
         #(RST_ACTIVE_TIME) rst_n = 1'b1;

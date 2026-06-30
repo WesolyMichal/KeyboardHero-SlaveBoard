@@ -1,15 +1,12 @@
 import game_pkg::*;
 import vga_pkg::*;
 
-module top_slave (
+module top_slave_4test (
         input  logic clk,
         input  logic rst_n,
-        input logic UART_rx,
-        output logic vs,
-        output logic hs,
-        output logic [3:0] r,
-        output logic [3:0] g,
-        output logic [3:0] b
+        input logic read_data,
+        input logic [7:0] r_data,
+        output vga_if vga_out
     );
 
     timeunit 1ns;
@@ -18,9 +15,6 @@ module top_slave (
     /**
      * Local variables and signals
      */
-    
-    wire logic [7:0] MSG, r_data;
-    wire logic rd_uart, rx_empty, read_data;
 
     wire logic enter, esc, song_choosing, song_confirm;
     wire logic enable_song_mask;
@@ -33,46 +27,17 @@ module top_slave (
     wire [15:0] end_score;
 
     // VGA interfaces
-    vga_if vga_bg, vga_out;
-
-    /**
-     * Signals assignments
-     */
-
-    assign vs = vga_out.vsync;
-    assign hs = vga_out.hsync;
-    assign {r, g, b} = vga_out.rgb;
+    vga_if vga_bg;
 
     /**
      * Submodules instances
      */
 
-    uart #(
-        .DVSR(36)
-    )u_uart(
-        .clk,
-        .reset(!rst_n),
-        .rx(UART_rx),
-        .r_data,
-        .rd_uart,
-        .rx_empty
-    );
-
-    uart_reader u_uart_reader(
-        .clk,
-        .rst_n,
-        .rx_empty,
-        .rd_uart,
-        .r_data,
-        .data_ready(read_data),
-        .out_data(MSG)
-    );
-
     comm_decoder u_comm_decoder(
         .clk,
         .rst_n,
         .read_data,
-        .r_data(MSG),
+        .r_data,
         .enter,
         .esc,
         .game_enable(enable_bgs_FSM.enable_song),
@@ -128,7 +93,9 @@ module top_slave (
         .dout(master_song_del)
     );
 
-    song_mask u_song_mask(
+    song_mask #(
+        .TICK_FREQUENCY(1_000_000)
+    )u_song_mask(
         .clk,
         .rst_n,
         .vga_in(vga_bg),
