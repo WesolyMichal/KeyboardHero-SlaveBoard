@@ -65,7 +65,7 @@ always_comb begin
                 if(current_note[0].buttons[column]) begin
                     automatic logic [15:0] margin       = (current_note[0].long[column]) ? 0 : MINIMUM_HEIGHT;
                     automatic logic [31:0] bottom_bound = (waiting_remaining > margin) ? (waiting_remaining - margin) : '0;
-                    automatic logic [31:0] top_bound    = waiting_remaining + margin + (current_note[0].long[column] ? current_note[0].duration : '0);
+                    automatic logic [31:0] top_bound    = waiting_remaining + margin + (current_note[0].long[column] ? duration_remaining : '0);
         
                     if((y_scaled >= bottom_bound) && (y_scaled < top_bound))
                         rgb_nxt = COLUMN_COLOURS[column];

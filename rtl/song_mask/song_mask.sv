@@ -6,7 +6,8 @@ module song_mask #(
     input logic clk,
     input logic rst_n,
 
-    input logic enable_mask_in,
+    input logic enable_in,
+    output logic enable_out,
     input logic [1:0] song_select, // Input to select the song from ROM
 
     input vga_if vga_in,
@@ -15,11 +16,10 @@ module song_mask #(
     output logic final_note
 );
 
-wire logic [37:0] vga_del, vga_player, vga_fill;
+wire logic [37:0] vga_del, vga_player;
 
 wire logic tick;
-wire logic enable_note_fill, enable_player, enable_outlogic;
-wire logic note_fill[0:5][0:639];
+wire logic enable_note_fill, enable_player;
 
 wire logic [31:0] timer_n;
 
@@ -53,7 +53,7 @@ timer #(
 ) u_ticker(
     .clk,
     .rst_n,
-    .enable(enable_mask_in),
+    .enable(enable_in),
     .tick,
     .enable_out(enable_player)
 );
@@ -77,7 +77,7 @@ note_fill_ctl u_note_fill(
     .rst_n,
     .current_note(note_player),
     .enable_in(enable_note_fill),
-    .enable_out(enable_outlogic),
+    .enable_out,
     .timer(timer_n),
     .vga_in(vga_player),
     .vga_out

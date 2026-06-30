@@ -32,7 +32,7 @@ module song_playing_tb;
     ) dut (
         .clk,
         .rst_n,
-        .enable_mask_in(enable_in),
+        .enable_in(enable_in),
         .song_select,
         .vga_in(vga_tim),
         .final_note,
