@@ -93,7 +93,8 @@ always_comb begin
             vga_in.hcount == NECK_X + 192 || 
             vga_in.hcount == NECK_X + 256 ||
             vga_in.hcount == NECK_X + 320 ||
-            vga_in.hcount == NECK_X + 384) begin
+            vga_in.hcount == NECK_X + 384 ||
+            vga_in.vcount == 640) begin
             
             in_line = 1'b1;
         end

@@ -4,13 +4,11 @@ module mux_bg (
     input logic clk,
     input logic rst_n,
 
-    input logic enable_start,
+    input game_pkg::enable_bgs enable_from_bg,
+
     input logic [11:0] rgb_start,
-    input logic enable_song_choose,
     input logic [11:0] rgb_choose,
-    input logic enable_song,
     input logic [11:0] rgb_song,
-    input logic enable_endscreen,
     input logic [11:0] rgb_endscreen,
 
     input vga_if delay_vga_in,
@@ -19,7 +17,6 @@ module mux_bg (
 );
 
 logic [11:0] rgb_nxt;
-logic [3:0] enable_addres;
 logic enable_song_out_next;
 
 always_ff @(posedge clk, negedge rst_n) begin
@@ -46,8 +43,7 @@ end
 
 always_comb begin
     enable_song_out_next = 0;
-    enable_addres = {enable_start, enable_song_choose, enable_song, enable_endscreen};
-    case(enable_addres)
+    case(enable_from_bg)
         4'b0001: rgb_nxt = rgb_endscreen;
         4'b0010: begin
                     rgb_nxt = rgb_song;
