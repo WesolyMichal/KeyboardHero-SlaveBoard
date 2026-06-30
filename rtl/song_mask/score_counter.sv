@@ -5,7 +5,7 @@ module score_counter (
     input  logic        rst_n,
 
     // --- WEJŚCIA STERUJĄCE Z GRY ---
-    input  game_pkg::game_action     player_action,
+    input  game_action  player_action,
     input  logic        action_strobe,
     input  logic        game_active,   // 1 - gra trwa (liczymy punkty), 0 - gra skończona (zamrażamy wynik)
 

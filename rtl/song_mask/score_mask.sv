@@ -1,3 +1,5 @@
+import vga_pkg::*;
+
 module score_mask (
     input logic clk,
     input logic rst_n,
@@ -5,8 +7,8 @@ module score_mask (
     input vga_if  vga_in,
     output vga_if vga_out,
 
-    input logic enable_score_in,
-    output logic enable_score_out,
+    input logic enable_in,
+    output logic enable_out,
 
     // Sygnały z score_countera
     input logic [15:0] current_score,
@@ -56,9 +58,7 @@ logic [10:0] font_addr;
 logic [7:0]  font_pixels;
 
 // OPÓŹNIONE SYGNAŁY Z INTERFEJSU VGA
-logic [10:0] d1_vcount, d1_hcount;
-logic        d1_vsync, d1_hsync, d1_vblnk, d1_hblnk;
-logic [11:0] d1_rgb;
+vga_if d1;
 
 // --- MODUŁ OPÓŹNIAJĄCY ---
 delay #(
@@ -67,8 +67,8 @@ delay #(
 ) u_vga_in_del1 (
     .clk(clk),
     .rst_n(rst_n),
-    .din({vga_in.vcount, vga_in.hcount, vga_in.vsync, vga_in.hsync, vga_in.vblnk, vga_in.hblnk, vga_in.rgb}),
-    .dout({d1_vcount, d1_hcount, d1_vsync, d1_hsync, d1_vblnk, d1_hblnk, d1_rgb})
+    .din(vga_in),
+    .dout(d1)
 );
 
 // --- INSTANCJA FONT ROM ---
@@ -151,7 +151,7 @@ end
 
 // --- ŁĄCZENIE KOLORÓW (NAKŁADKA) ---
 always_comb begin
-    if(d1_hblnk || d1_vblnk) begin
+    if(d1.hblnk || d1.vblnk) begin
         rgb_nxt = 12'h0_0_0;
         
     end else if (enable_reg[0]) begin
@@ -159,7 +159,7 @@ always_comb begin
             rgb_nxt = TEXT_COLOR;
         end             
     end else begin 
-        rgb_nxt = d1_rgb;
+        rgb_nxt = d1.rgb;
     end
 end
 
@@ -175,17 +175,17 @@ always_ff @(posedge clk, negedge rst_n) begin
         vga_out.rgb      <= '0;
 
         enable_reg       <= '0;
-        enable_score_out <= '0;
+        enable_out       <= '0;
     end else begin
-        enable_reg       <= {enable_reg[0], enable_score_in}; 
-        enable_score_out <= enable_reg[1];
+        enable_reg       <= {enable_reg[0], enable_in}; 
+        enable_out       <= enable_reg[1];
 
-        vga_out.vcount   <= d1_vcount;
-        vga_out.hcount   <= d1_hcount;
-        vga_out.vsync    <= d1_vsync;
-        vga_out.hsync    <= d1_hsync;
-        vga_out.vblnk    <= d1_vblnk;
-        vga_out.hblnk    <= d1_hblnk;
+        vga_out.vcount   <= d1.vcount;
+        vga_out.hcount   <= d1.hcount;
+        vga_out.vsync    <= d1.vsync;
+        vga_out.hsync    <= d1.hsync;
+        vga_out.vblnk    <= d1.vblnk;
+        vga_out.hblnk    <= d1.hblnk;
         
         vga_out.rgb      <= rgb_nxt;
     end
