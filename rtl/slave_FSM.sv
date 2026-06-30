@@ -11,28 +11,34 @@ module slave_FSM (
 
     input logic enter,
     input logic esc,
-    input game_pkg::game_if.status(),
+    input game_action status,
 
     output logic [1:0] master_song,
-    output game_pkg::enable_bgs enable_bgs_FSM,
+    output enable_bgs enable_bgs_FSM,
     output logic enter_out
 );
 
-enum logic [2:0] {INIT, WAIT_CONN, IDLE, HOME_SCREEN, WAIT_HOMESCREEN, SONG_CHOOSE, PLAY_SONG, ENDSCREEN} state, state_nxt;
+enum logic [2:0] {INIT, WAIT_CONN, HOME_SCREEN, WAIT_HOMESCREEN, SONG_CHOOSE, PLAY_SONG, ENDSCREEN} state, state_nxt;
 
 logic [3:0] timer, timer_nxt;
+logic [1:0] master_song_nxt;
 
 always_ff @(posedge clk, negedge rst_n) begin
     if(!rst_n) begin
-        state <= IDLE;
+        state <= INIT;
         timer <= '0;
+        master_song <= '0;
     end else begin
         state <= state_nxt;
         timer <= timer_nxt;
+        master_song <= master_song_nxt;
     end
 end
 
 always_comb begin //obsuga stanow
+    master_song_nxt = master_song;
+    state_nxt = state;
+
     case (state)
         INIT: state_nxt = WAIT_CONN;
         WAIT_CONN:      if (enter) begin
@@ -53,7 +59,7 @@ always_comb begin //obsuga stanow
                             timer_nxt = timer - 1;
                         end
         SONG_CHOOSE:    if(song_confirm) begin
-                            master_song = master_song_select;
+                            master_song_nxt = master_song_select;
                             state_nxt = PLAY_SONG;
                         end else if(esc) begin
                             state_nxt = HOME_SCREEN;
