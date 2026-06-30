@@ -62,4 +62,11 @@ package game_pkg;
     localparam UART_FSM = 1'b0;
     localparam UART_GAME = 1'b1;
 
+    typedef struct packed {
+        logic enable_start;
+        logic enable_song_choose;
+        logic enable_song;
+        logic enable_endscreen;
+    } enable_bgs;
+
 endpackage

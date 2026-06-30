@@ -21,9 +21,9 @@ localparam [11:0] MIBOMBO_OUTLINE = 12'hf_f_f;
 localparam [11:0] MIBOMBO_INNER   = 12'h7_7_7; 
 
 // --- PARAMETRY GRYFU  ---
-localparam NECK_X      = 384; 
+localparam NECK_X      = 320; 
 localparam NECK_Y      = 0;
-localparam NECK_WIDTH  = 256; 
+localparam NECK_WIDTH  = 384; 
 localparam NECK_HEIGHT = 768;
 
 // --- PARAMETRY GŁOŚNIKÓW ---
@@ -91,7 +91,9 @@ always_comb begin
             vga_in.hcount == NECK_X + 64 || 
             vga_in.hcount == NECK_X + 128 || 
             vga_in.hcount == NECK_X + 192 || 
-            vga_in.hcount == NECK_X + 256 - 1) begin
+            vga_in.hcount == NECK_X + 256 ||
+            vga_in.hcount == NECK_X + 320 ||
+            vga_in.hcount == NECK_X + 384) begin
             
             in_line = 1'b1;
         end

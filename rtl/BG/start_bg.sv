@@ -3,7 +3,7 @@ import vga_pkg::*;
 module start_bg (
     input logic clk,
     input logic rst_n,
-    input logic [7:0] button,
+    input logic enter,
     input logic enable_start_in,
 
     input vga_if vga_in,
@@ -12,7 +12,7 @@ module start_bg (
     output logic enable_start_out
 );
 
-import buttons_pkg::*;
+import game_pkg::*;
 
 // --- PARAMETRY --- 
 localparam [11:0] BG_COLOR = 12'h3_3_5;
@@ -157,7 +157,7 @@ always_comb begin
         rgb_nxt = logo_rgb;
     end else if(d1_in_button) begin //enter
         rgb_nxt = enter_bit ? 12'hf_f_f : 12'h0_0_0;
-        if (button == BTN_ENTER)
+        if (enter)
             rgb_nxt = ~rgb_nxt;
     end else if(d1_in_text && font_pixels[~d1_px_h_in_char]) begin //text
         rgb_nxt = 12'hf_f_0;

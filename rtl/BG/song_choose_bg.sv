@@ -13,7 +13,7 @@ module song_choose_bg (
     output logic [2:0] selected_song 
 );
 
-import buttons_pkg::*;
+import game_pkg::*;
 
 // --- PARAMETRY KOLORÓW --- 
 localparam [11:0] BG_COLOR     = 12'h2_2_3;
@@ -83,9 +83,9 @@ always_ff @(posedge clk, negedge rst_n) begin
     if (!rst_n) begin
         selected_song <= '0;
     end else begin
-        if (button == BTN_UP) begin
+        if (button == ARR_LEFT) begin
             selected_song <= (selected_song + 3'd4) % 3'd5;
-        end else if (button == BTN_DOWN) begin
+        end else if (button == ARR_RIGHT) begin
             selected_song <= (selected_song + 3'd1) % 3'd5;
         end
     end
