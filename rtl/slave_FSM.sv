@@ -5,7 +5,6 @@ module slave_FSM (
     input logic rst_n,
     input logic final_note,
 
-    input logic song_choosing,
     input logic song_confirm,
     input logic [1:0] master_song_select,
 
@@ -14,8 +13,8 @@ module slave_FSM (
     input game_action status,
 
     output logic [1:0] master_song,
-    output enable_bgs enable_bgs_FSM,
-    output logic enter_out
+    output game_pkg::enable_bgs enable_bgs_FSM,
+    output logic enter_out_FSM
 );
 
 enum logic [2:0] {INIT, WAIT_CONN, HOME_SCREEN, WAIT_HOMESCREEN, SONG_CHOOSE, PLAY_SONG, ENDSCREEN} state, state_nxt;
@@ -87,7 +86,7 @@ always_comb begin //obsuga wyjsc
     enable_bgs_FSM.enable_song = (state == PLAY_SONG);
     enable_bgs_FSM.enable_endscreen = (state == ENDSCREEN);
     
-    enter_out = (state == WAIT_HOMESCREEN);
+    enter_out_FSM = (state == WAIT_HOMESCREEN);
 end
 
 endmodule
