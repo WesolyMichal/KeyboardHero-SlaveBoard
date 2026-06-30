@@ -4,13 +4,12 @@ module song_choose_bg (
     input logic clk,
     input logic rst_n,
     input logic enable_choose_in,
-    input logic [7:0] button,
+    input [1:0] master_song,
 
     input vga_if vga_in,
     
     output logic [11:0] rgb_out_choose_bg,
-    output logic enable_choose_out,
-    output logic [2:0] selected_song 
+    output logic enable_choose_out
 );
 
 import game_pkg::*;
@@ -43,6 +42,7 @@ localparam logic [0:TEXT_LEN-1] [7:0] SONG_4 = "5. Desert You   ";
 // --- SYGNAŁY WEWNĘTRZNE ---
 logic [11:0] rgb_nxt;
 logic [1:0] enable_reg;
+logic [2:0] selected_song;
 
 logic [15:0] hoff_text, voff_text;
 logic [7:0]  char_code;
@@ -83,11 +83,7 @@ always_ff @(posedge clk, negedge rst_n) begin
     if (!rst_n) begin
         selected_song <= '0;
     end else begin
-        if (button == ARR_LEFT) begin
-            selected_song <= (selected_song + 3'd4) % 3'd5;
-        end else if (button == ARR_RIGHT) begin
-            selected_song <= (selected_song + 3'd1) % 3'd5;
-        end
+        selected_song <= master_song;
     end
 end
 
