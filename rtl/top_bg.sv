@@ -9,6 +9,8 @@ module top_bg (
     input logic enable_song,
     input logic enable_endscreen,
 
+    output logic enable_song_mux,
+
     vga_if.in_bez_rgb vga_in,
     vga_if.out vga_out
 );
@@ -79,6 +81,7 @@ mux_bg u_mux_bg (
     .enable_endscreen(enable_endscreen_out),
     .rgb_endscreen(rgb_out_endscreen_bg),
     .delay_vga_in(delay_vga_out),
+    .enable_song_mux(enable_song_mux),
     .vga_out(vga_out)
 );
 

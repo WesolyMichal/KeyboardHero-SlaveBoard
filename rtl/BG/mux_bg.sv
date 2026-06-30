@@ -12,7 +12,7 @@ module mux_bg (
     input logic [11:0] rgb_endscreen,
 
     vga_if.in_bez_rgb delay_vga_in,
-    output logic enable_song_out,
+    output logic enable_song_mux,
     vga_if.out vga_out
 );
 
@@ -29,7 +29,7 @@ always_ff @(posedge clk, negedge rst_n) begin
         vga_out.hsync  <= '0;
         vga_out.hblnk  <= '0;
         vga_out.rgb    <= '0;
-        enable_song_out <= '0;
+        enable_song_mux <= '0;
     end else begin
         vga_out.vcount <= delay_vga_in.vcount;
         vga_out.vsync  <= delay_vga_in.vsync ;
@@ -38,7 +38,7 @@ always_ff @(posedge clk, negedge rst_n) begin
         vga_out.hsync  <= delay_vga_in.hsync ;
         vga_out.hblnk  <= delay_vga_in.hblnk ;
         vga_out.rgb    <= rgb_nxt;
-        enable_song_out <= enable_song_out_next;
+        enable_song_mux <= enable_song_out_next;
     end
 end
 

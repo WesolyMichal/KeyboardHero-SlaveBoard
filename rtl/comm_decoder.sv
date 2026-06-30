@@ -12,7 +12,7 @@ module comm_decoder(
     output logic song_choosing,
     output logic song_confirm,
 
-    output game_if game_engine,
+    output game_pkg::game_if game_engine,
     output logic enter,
     output logic esc,
 
