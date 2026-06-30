@@ -3,7 +3,7 @@ import game_pkg::*;
 module top_vga (
         input  logic clk,
         input  logic rst_n,
-        input logic [7:0] UART_in,
+        input logic UART_rx,
         output logic vs,
         output logic hs,
         output logic [3:0] r,
@@ -17,64 +17,68 @@ module top_vga (
     /**
      * Local variables and signals
      */
-    wire [7:0] button;
-    wire enable_start, enable_song_choose, enable_song, enable_endscreen;
-   // wire [7:0] UART_in;
-    wire enable_song_mux;
+    
+    wire logic [7:0] MSG, r_data;
+    wire logic rd_uart, rx_empty, read_data;
+
+    wire logic enter, esc, song_choosing, song_confirm;
+    wire logic game_enable;
+    wire game_if game_engine;
+    wire logic [1:0] song_select; 
 
     // VGA signals from timing
-    wire vga_if vga_tim;
+
 
     // VGA signals from background
-    wire vga_if vga_bg;
+
 
     // VGA interfaces
-    vga_if vga_out_timing_if();
-    vga_if vga_out_top_bg_if();
+    
 
     /**
      * Signals assignments
      */
-
-    assign vs = vga_bg.vsync;
-    assign hs = vga_bg.hsync;
-    assign {r,g,b} = vga_bg.rgb;
 
 
     /**
      * Submodules instances
      */
 
-    slave_FSM u_slave_fsm (
+    uart #(
+        .DVSR(36)
+    )u_uart(
         .clk,
-        .rst_n,
-        .UART_in(UART_in),
-        .button(button),
-        .master_song(),
-        .enable_start,
-        .enable_song_choose,
-        .enable_song,
-        .enable_endscreen
+        .reset(!rst_n),
+        .rx(UART_rx),
+        .r_data,
+        .rd_uart,
+        .rx_empty
     );
 
-    vga_timing u_vga_timing (
+    uart_reader u_uart_reader(
         .clk,
         .rst_n,
-        .vga_out(vga_tim)
+        .rx_empty,
+        .rd_uart,
+        .r_data,
+        .data_ready(read_data),
+        .out_data(MSG)
     );
 
-    top_bg u_top_bg (
+    comm_decoder u_comm_decoder(
         .clk,
         .rst_n,
-        .button(button),
-        .score_in(),
-        .enable_start(enable_start),
-        .enable_song_choose(enable_song_choose),
-        .enable_song(enable_song),
-        .enable_endscreen(enable_endscreen),
-        .vga_in(vga_out_timing_if),
-        .enable_song_mux(enable_song_mux),
-        .vga_out(vga_out_top_bg_if)
+        .read_data,
+        .r_data(MSG),
+        .enter,
+        .esc,
+        .game_enable,
+        .game_engine,
+        .song_choosing,
+        .song_confirm,
+        .song_select
     );
+
+
 
 endmodule

@@ -4,7 +4,7 @@ module comm_decoder(
     input logic clk,
     input logic rst_n,
 
-    input logic [7:0] rx_data,
+    input logic [7:0] r_data,
     input logic read_data,
 
     input logic game_enable,
@@ -55,21 +55,21 @@ always_comb begin
         song_choosing_nxt = 1'b0;
         song_confirm_nxt = 1'b0;
 
-        casex(rx_data)
+        casex(r_data)
             HALT: esc_nxt = 1'b1;
             ENTER: enter_nxt = 1'b1;
             {4'b00xx, CHOOSE}: begin
-                song_select_nxt = rx_data[5:4];
+                song_select_nxt = r_data[5:4];
                 song_choosing_nxt = 1'b1;
             end
             {4'b00xx, CONFIRM}: begin
-                song_select_nxt = rx_data[5:4];
+                song_select_nxt = r_data[5:4];
                 song_confirm_nxt = 1'b1;
             end
         endcase
 
-        game_engine_buffer_nxt.buttons = rx_data[7:2];
-        game_engine_buffer_nxt.status = rx_data[1:0];
+        game_engine_buffer_nxt.buttons = r_data[7:2];
+        game_engine_buffer_nxt.status = r_data[1:0];
     end
 
 end
