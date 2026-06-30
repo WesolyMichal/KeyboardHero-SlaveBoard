@@ -12,7 +12,7 @@ module comm_decoder(
     output logic song_choosing,
     output logic song_confirm,
 
-    output game_pkg::game_if game_engine,
+    output game_if game_engine,
     output logic enter,
     output logic esc,
 
@@ -69,7 +69,7 @@ always_comb begin
         endcase
 
         game_engine_buffer_nxt.buttons = r_data[7:2];
-        game_engine_buffer_nxt.status = r_data[1:0];
+        {game_engine_buffer_nxt.status} = r_data[1:0];
     end
 
 end

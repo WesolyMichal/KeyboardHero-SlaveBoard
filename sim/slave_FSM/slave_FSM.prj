@@ -1,0 +1,4 @@
+sv work ../../rtl/game_pkg.sv \
+        ../../rtl/comm_decoder.sv \
+        ../../rtl/slave_FSM.sv \
+        slave_FSM_tb.sv

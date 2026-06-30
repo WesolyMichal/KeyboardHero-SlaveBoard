@@ -9,7 +9,6 @@ module song_mask #(
     input game_if game_engine,
 
     input logic enable_in,
-    output logic enable_out,
     input logic [1:0] song_select, // Input to select the song from ROM
 
     input vga_if vga_in,
@@ -36,6 +35,8 @@ wire logic [3:0]  current_multiplier;
 
 wire logic [1:0] status_del;
 wire logic [5:0] buttons_del;
+
+wire logic enable_out;
 
 delay #(
     .CLK_DEL(1),
