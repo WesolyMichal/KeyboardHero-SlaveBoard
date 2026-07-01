@@ -20,7 +20,7 @@ module top_vga_basys3 (
         output wire [3:0] vgaRed,
         output wire [3:0] vgaGreen,
         output wire [3:0] vgaBlue,
-        output wire JA1
+        input wire JA1
     );
 
     timeunit 1ns;
@@ -34,6 +34,7 @@ module top_vga_basys3 (
     wire locked;
     wire pclk;
     wire pclk_mirror;
+    wire UART_rx;
 
     (* KEEP = "TRUE" *)
     (* ASYNC_REG = "TRUE" *)
@@ -46,7 +47,7 @@ module top_vga_basys3 (
      * Signals assignments
      */
 
-    assign JA1 = pclk_mirror;
+    assign UART_rx = JA1;
 
 
     /**
@@ -117,10 +118,21 @@ module top_vga_basys3 (
      *  Project functional top module
      */
 
-    bg_testing u_top_vga (
+    // bg_testing u_top_vga (
+    //     .clk(pclk),
+    //     .rst_n(!btnC),
+    //     // .UART_rx(JA1),
+    //     .r(vgaRed),
+    //     .g(vgaGreen),
+    //     .b(vgaBlue),
+    //     .hs(Hsync),
+    //     .vs(Vsync)
+    // );
+
+    top_slave u_top_slave (
         .clk(pclk),
         .rst_n(!btnC),
-        // .UART_rx(JA1),
+        .UART_rx,
         .r(vgaRed),
         .g(vgaGreen),
         .b(vgaBlue),

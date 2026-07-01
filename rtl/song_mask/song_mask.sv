@@ -33,7 +33,7 @@ wire logic [1:0] song_select_del;
 wire logic [15:0] current_score;
 wire logic [3:0]  current_multiplier;
 
-wire logic [1:0] status_del;
+game_action status_del;
 wire logic [5:0] buttons_del;
 
 wire logic enable_out;
@@ -100,7 +100,7 @@ delay #(
     .clk,
     .rst_n,
     .din(game_engine.status),
-    .dout(status_del)
+    .dout({status_del})
 );
 
 score_counter u_score_counter(

@@ -36,7 +36,7 @@ set sv_files {
     ../rtl/BG/song_bg.sv
     ../rtl/BG/song_choose_bg.sv
     ../rtl/BG/start_bg.sv
-    ../rtl/BG/top_bg.sv
+    ../rtl/top_bg.sv
     ../rtl/rom/agh_image_rom.sv
     ../rtl/rom/enter_button_rom.sv
     ../rtl/rom/font_rom.sv

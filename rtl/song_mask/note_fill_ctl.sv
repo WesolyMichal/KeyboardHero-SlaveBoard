@@ -21,7 +21,7 @@ module note_fill_ctl #(
 logic [15:0] waiting_remaining, duration_remaining;
 logic [11:0] rgb_nxt;
 
-always_ff @(posedge clk or negedge rst_n) begin
+always_ff @(posedge clk) begin
     if(!rst_n) begin
         enable_out  <= '0;
         vga_out     <= '0;

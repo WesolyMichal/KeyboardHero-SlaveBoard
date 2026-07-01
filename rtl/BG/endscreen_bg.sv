@@ -77,10 +77,12 @@ logic d1_in_score, d2_in_score;
 logic [2:0] d1_px_h_in_char, d2_px_h_in_char;
 
 // Pamięci ROM
-logic [10:0] font_addr, font_addr_nxt;
+logic [10:0] font_addr;
+(* use_dsp = "no" *) logic [10:0] font_addr_nxt;
 logic [7:0]  font_pixels;
 
-logic [12:0] star_addr, star_addr_nxt;
+logic [12:0] star_addr;
+(* use_dsp = "no" *) logic [12:0] star_addr_nxt;
 logic [1:0]  star_pixel;
 
 // --- INSTANCJE ROM ---
@@ -153,7 +155,8 @@ always_comb begin
 
         if (px_in_star < STAR_LENGTH) begin
             in_star       = 1'b1;
-            star_addr_nxt = (voff_star * STAR_LENGTH) + px_in_star; 
+            // star_addr_nxt = (voff_star * STAR_LENGTH) + px_in_star; 
+            star_addr_nxt = '0;
 
             if (star_idx == 0 && end_score >= 200) star_is_earned = 1'b1;
             if (star_idx == 1 && end_score >= 400) star_is_earned = 1'b1;

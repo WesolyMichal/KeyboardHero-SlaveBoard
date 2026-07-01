@@ -42,13 +42,8 @@ vga_timing u_vga_timing (
 top_bg dut (
     .clk(clk),
     .rst_n(rst_n),
-    // .button(button),
     .score_in(score_in),
-    // .enable_start(enable_start),
-    // .enable_song_choose(enable_song_choose),
     .enable_song(enable_song),
-    // .enable_endscreen(enable_endscreen),
-    .vga_in(vga_if_timing),
     .vga_out(vga_if_out_dut)
 );
 

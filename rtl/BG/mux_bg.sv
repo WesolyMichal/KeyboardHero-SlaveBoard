@@ -51,6 +51,7 @@ always_comb begin
                 end
         4'b0100: rgb_nxt = rgb_choose;
         4'b1000: rgb_nxt = rgb_start;
+        default: rgb_nxt = '0;
     endcase
 end
 

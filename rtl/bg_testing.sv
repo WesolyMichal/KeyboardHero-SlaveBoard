@@ -22,15 +22,15 @@ vga_timing u_timing(
     .vga_out(vga_tim)
 );
 
-start_bg u_start (
-    .clk,
-    .rst_n,
-    .enter(1'b1),
-    .enable_start_in(1'b1),
-    .vga_in(vga_tim),
-    .enable_start_out(enable_out),
-    .rgb_out_start_bg(rgb_out)
-);
+// start_bg u_start (
+//     .clk,
+//     .rst_n,
+//     .enter(1'b1),
+//     .enable_start_in(1'b1),
+//     .vga_in(vga_tim),
+//     .enable_start_out(enable_out),
+//     .rgb_out_start_bg(rgb_out)
+// );
 
 // song_choose_bg u_song_choose (
 //     .clk,
@@ -42,15 +42,15 @@ start_bg u_start (
 //     .vga_in(vga_tim)
 // );
 
-// endscreen_bg u_endscreen(
-//     .clk,
-//     .rst_n,
-//     .enable_endscreen_in(1'b1),
-//     .enable_endscreen_out(enable_out),
-//     .end_score_in(1234),
-//     .rgb_out_endscreen_bg(rgb_out),
-//     .vga_in(vga_tim)
-// );
+endscreen_bg u_endscreen(
+    .clk,
+    .rst_n,
+    .enable_endscreen_in(1'b1),
+    .enable_endscreen_out(enable_out),
+    .end_score_in(16'h1234),
+    .rgb_out_endscreen_bg(rgb_out),
+    .vga_in(vga_tim)
+);
 
 delay #(
     .CLK_DEL(3),

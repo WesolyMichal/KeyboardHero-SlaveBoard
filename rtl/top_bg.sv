@@ -8,7 +8,7 @@ module top_bg (
     input enter_in_FSM,
     input [1:0] master_song,
     input logic [15:0] score_in,
-    input game_pkg::enable_bgs enable_backgrounds,
+    input enable_bgs enable_backgrounds,
 
     output vga_if vga_out,
     output logic enable_song
@@ -65,7 +65,7 @@ endscreen_bg u_endscreen_bg(
 );
 
 delay #(
-    .CLK_DEL(2),
+    .CLK_DEL(3),
     .WIDTH(38)
 ) u_delay_vga(
     .clk,

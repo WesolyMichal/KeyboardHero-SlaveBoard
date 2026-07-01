@@ -21,7 +21,7 @@ module comm_decoder(
 
 logic enter_nxt, esc_nxt, song_choosing_nxt, song_confirm_nxt;
 logic [1:0] song_select_nxt;
-game_if game_engine_buffer, game_engine_buffer_nxt, game_engine_nxt;
+game_if game_engine_nxt;
 
 always_ff @(posedge clk) begin
     if(!rst_n) begin
@@ -30,8 +30,8 @@ always_ff @(posedge clk) begin
         song_choosing <= '0;
         song_confirm <= '0;
         song_select <= '0;
-        game_engine <= '0;
-        game_engine_buffer <= '0;
+        game_engine.buttons <= '0;
+        game_engine.status  <= PLAYER_IDLE;
     end else begin
         enter <= enter_nxt;
         esc <= esc_nxt;
@@ -39,7 +39,6 @@ always_ff @(posedge clk) begin
         song_confirm <= song_confirm_nxt;
         song_select <= song_select_nxt;
         game_engine <= game_engine_nxt;
-        game_engine_buffer <= game_engine_buffer_nxt;
     end
 end
 
@@ -49,7 +48,6 @@ always_comb begin
     song_choosing_nxt = song_choosing;
     song_confirm_nxt = song_confirm;
     song_select_nxt = song_select;
-    game_engine_buffer_nxt = game_engine_buffer;
 
     if(read_data) begin
         song_choosing_nxt = 1'b0;
@@ -67,13 +65,21 @@ always_comb begin
                 song_confirm_nxt = 1'b1;
             end
         endcase
-
-        game_engine_buffer_nxt.buttons = r_data[7:2];
-        {game_engine_buffer_nxt.status} = r_data[1:0];
     end
-
 end
 
-assign game_engine_nxt = (game_enable) ? game_engine_buffer : game_engine;
+always_comb begin
+    game_engine_nxt = game_engine;
+
+    if(game_enable) begin
+        if(read_data) begin
+            game_engine_nxt.buttons = r_data[7:2];
+            {game_engine_nxt.status} = r_data[1:0];
+        end
+    end else begin
+        game_engine_nxt.buttons = '0;
+        game_engine_nxt.status = PLAYER_IDLE;
+    end        
+end
 
 endmodule

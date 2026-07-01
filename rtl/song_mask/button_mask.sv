@@ -30,7 +30,7 @@ localparam CYAN_BUTTON_X = NECK_LINES_X [5] + BORDER_WIDTH + BUTTON_FRAME;     /
 logic [11:0] rgb_nxt;
 
 
-always_ff @(posedge clk, negedge rst_n) begin
+always_ff @(posedge clk) begin
     if(!rst_n) begin
         vga_out.rgb <= '0;
         vga_out     <= '0;

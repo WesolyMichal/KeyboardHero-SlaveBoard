@@ -61,19 +61,23 @@ always_comb begin //obsuga stanow
                             master_song_nxt = master_song_select;
                             state_nxt = PLAY_SONG;
                         end else if(esc) begin
+                            master_song_nxt = '0;
                             state_nxt = HOME_SCREEN;
                         end else begin
+                            master_song_nxt = master_song_select;
                             state_nxt = SONG_CHOOSE;
                         end
         PLAY_SONG:      if (status == END_GAME || final_note) begin
                             state_nxt = ENDSCREEN;
                         end else if (esc) begin
                             state_nxt = SONG_CHOOSE;
+                            master_song_nxt = '0;
                         end else begin 
                             state_nxt = PLAY_SONG;
                         end
-        ENDSCREEN:      if (enter) begin
+        ENDSCREEN:      if (esc) begin
                             state_nxt = SONG_CHOOSE;
+                            master_song_nxt = '0;
                         end else begin 
                             state_nxt = ENDSCREEN;
                         end             

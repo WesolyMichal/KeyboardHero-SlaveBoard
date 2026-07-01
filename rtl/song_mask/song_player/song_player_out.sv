@@ -19,7 +19,7 @@ module song_player_out(
 
 logic final_note_nxt;
 
-always_ff @(posedge clk or negedge rst_n) begin
+always_ff @(posedge clk) begin
     if(!rst_n) begin
         final_note <= '0;
         note_out <= '{'0, '0, '0};

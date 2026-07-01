@@ -23,7 +23,7 @@ note_t current_note, current_note_nxt;
 
 enum logic {IDLE, PLAYING} state, state_nxt;
 
-always_ff @(posedge clk or negedge rst_n) begin
+always_ff @(posedge clk) begin
     if(!rst_n) begin
         state      <= IDLE;
         enable_out <= '0;

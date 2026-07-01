@@ -21,7 +21,7 @@ module score_counter (
     logic [3:0] consecutive_hits; // Ile HIT-ów z rzędu na obecnym poziomie mnożnika
     logic [3:0] hits_to_next;     // Ile HIT-ów potrzeba, aby zwiększyć mnożnik
 
-    always_ff @(posedge clk or negedge rst_n) begin
+    always_ff @(posedge clk) begin
         if (!rst_n) begin
             current_score      <= '0;
             current_multiplier <= 4'd1;
