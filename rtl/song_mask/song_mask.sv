@@ -139,7 +139,6 @@ button_mask u_button_mask(
     .clk,
     .rst_n,
     .enable_in(enable_buttons),
-    .enable_out,
     .buttons(buttons_del),
     .vga_in(vga_score),
     .vga_out

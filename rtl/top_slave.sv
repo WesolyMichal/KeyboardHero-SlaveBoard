@@ -87,12 +87,11 @@ module top_slave (
         .rst_n,
         .enter,
         .esc,
-        .song_choosing,
         .song_confirm,
         .master_song_select(song_select),
         .enable_bgs_FSM,
         .final_note,
-        .enter_out,
+        .enter_out_FSM(enter_out),
         .master_song,
         .status(game_engine.status)
     );

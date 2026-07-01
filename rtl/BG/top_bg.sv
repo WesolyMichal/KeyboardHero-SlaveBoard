@@ -60,7 +60,7 @@ endscreen_bg u_endscreen_bg(
 );
 
 delay #(
-    .CLK_DEL(2),
+    .CLK_DEL(3),
     .WIDTH(38)
 ) u_delay_vga(
     .clk,

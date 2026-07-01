@@ -6,7 +6,7 @@ module enter_button_rom (
 
     // Deklaracja wewnętrznej pamięci ROM: 1 bit szerokości, 8192 elementów głębokości
     // Zmień 8191 na 4351, jeśli użyjesz dokładnie tego pliku, który wkleiłeś wyżej
-    logic btn_memory [0:8191]; 
+    logic [0:0]btn_memory [0:8191]; 
 
     // Wczytanie pliku przy starcie układu
     initial begin

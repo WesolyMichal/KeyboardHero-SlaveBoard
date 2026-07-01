@@ -2,7 +2,7 @@ import vga_pkg::*;
 
 module song_choose_bg (
     input logic clk,
-    input logic rst_n,
+    input logic rst_n,               // Reset synchroniczny, aktywny stanem niskim
     input logic enable_choose_in,
     input [1:0] master_song,
 
@@ -42,80 +42,65 @@ localparam logic [0:TEXT_LEN-1] [7:0] SONG_4 = "5. Desert You   ";
 // --- SYGNAŁY WEWNĘTRZNE ---
 logic [11:0] rgb_nxt;
 logic [1:0] enable_reg;
-logic [2:0] selected_song;
+logic [1:0] selected_song;
 
 logic [15:0] hoff_text, voff_text;
 logic [7:0]  char_code;
-logic [2:0]  px_h_in_char, d1_px_h_in_char;
+logic [2:0]  px_h_in_char;
 
-logic in_text, d1_in_text;
-logic in_cursor, d1_in_cursor;
+// Rejestry potoku (Pipeline) do synchronizacji z opóźnieniem pamięci ROM (3 takty opóźnienia w sumie)
+logic d1_vblnk, d2_vblnk;
+logic d1_hblnk, d2_hblnk;
+logic in_text, d1_in_text, d2_in_text;
+logic in_cursor, d1_in_cursor, d2_in_cursor;
+logic [2:0] d1_px_h_in_char, d2_px_h_in_char;
 
 logic [10:0] rel_y;
 logic [2:0]  current_row;
 logic [6:0]  y_in_row;
 
-logic [10:0] font_addr;
+logic [10:0] font_addr, font_addr_nxt;
 logic [7:0]  font_pixels;
-
-logic d1_vblnk, d1_hblnk;
-
-// --- MODUŁ OPÓŹNIAJĄCY ---
-delay  #(
-        .WIDTH(2), 
-        .CLK_DEL(1)
-    )u_vga_in_del1(
-        .clk(clk),
-        .rst_n(rst_n),
-        .din({vga_in.vblnk, vga_in.hblnk}),
-        .dout({d1_vblnk, d1_hblnk})
-    );
 
 // --- INSTANCJA FONT ROM ---
 font_rom u_font_rom (
     .clk(clk),
+    // .rst_n(rst_n),
     .addr(font_addr),
     .char_line_pixels(font_pixels)
 );
 
-// --- LOGIKA STEROWANIA KURSOREM ---
-always_ff @(posedge clk, negedge rst_n) begin
-    if (!rst_n) begin
-        selected_song <= '0;
-    end else begin
-        selected_song <= master_song;
-    end
-end
-
-// --- LOGIKA POZYCJI (Cykl 0) ---
+// --- CYKL 0: Logika kombinacyjna wyliczania adresów i flag ---
 always_comb begin
-    in_text      = 1'b0;
-    in_cursor    = 1'b0;
-    font_addr    = '0;
-    char_code    = '0;
-    hoff_text    = '0;
-    voff_text    = '0;
-    px_h_in_char = '0;
+    in_text       = 1'b0;
+    in_cursor     = 1'b0;
+    font_addr_nxt = '0;
+    char_code     = '0;
+    hoff_text     = '0;
+    voff_text     = '0;
+    px_h_in_char  = '0;
 
-    rel_y = vga_in.vcount - START_Y;
+    rel_y       = vga_in.vcount - START_Y;
     current_row = rel_y >> ROW_STEP_SHIFT; 
     y_in_row    = rel_y[6:0];              
 
     if (vga_in.vcount >= START_Y && current_row < 5 && y_in_row < ROW_HEIGHT) begin
         
+        // Logika KURSU_RA
         if (vga_in.hcount >= CURSOR_X && vga_in.hcount < CURSOR_X + (8 << TEXT_ADDR_SHIFT)) begin
             if (current_row == selected_song) begin
-                in_cursor = 1'b1;
-                hoff_text = (vga_in.hcount - CURSOR_X) >> TEXT_ADDR_SHIFT;
-                voff_text = y_in_row >> TEXT_ADDR_SHIFT;
-                char_code = 8'h2D;
-                font_addr = {char_code[6:0], 4'(voff_text[3:0])};
-                px_h_in_char = hoff_text[2:0];
+                in_cursor     = 1'b1;
+                hoff_text     = (vga_in.hcount - CURSOR_X) >> TEXT_ADDR_SHIFT;
+                voff_text     = y_in_row >> TEXT_ADDR_SHIFT;
+                char_code     = 8'h2D; // znak '-' jako kursor
+                font_addr_nxt = {char_code[6:0], 4'(voff_text[3:0])};
+                px_h_in_char  = hoff_text[2:0];
             end
         end
         
+        // Logika TEKSTU PIOSENEK
         else if (vga_in.hcount >= START_X && vga_in.hcount < START_X + (TEXT_LEN * 8 << TEXT_ADDR_SHIFT)) begin
-            in_text = 1'b1;
+            in_text   = 1'b1;
             hoff_text = (vga_in.hcount - START_X) >> TEXT_ADDR_SHIFT;
             voff_text = y_in_row >> TEXT_ADDR_SHIFT;
 
@@ -128,32 +113,58 @@ always_comb begin
                 default: char_code = 8'h20; 
             endcase
 
-            font_addr = {char_code[6:0], 4'(voff_text[3:0])};
-            px_h_in_char = hoff_text[2:0];
+            font_addr_nxt = {char_code[6:0], 4'(voff_text[3:0])};
+            px_h_in_char  = hoff_text[2:0];
         end
     end
 end
 
-// --- SYNCHRONIZACJA FLAG (Cykl 1) ---
-always_ff @(posedge clk, negedge rst_n) begin
-    if(!rst_n) begin
+// --- CYKL 1: Rejestracja adresu ROM oraz pierwszy stopień opóźnień ---
+always_ff @(posedge clk) begin
+    if (!rst_n) begin
+        selected_song   <= '0;
+        font_addr       <= '0;
+        
+        d1_vblnk        <= 1'b0;
+        d1_hblnk        <= 1'b0;
         d1_in_text      <= 1'b0;
         d1_in_cursor    <= 1'b0;
         d1_px_h_in_char <= '0;
     end else begin
+        selected_song   <= master_song; // Zatrzaskiwanie wejścia wyboru piosenki
+        font_addr       <= font_addr_nxt;
+        
+        d1_vblnk        <= vga_in.vblnk;
+        d1_hblnk        <= vga_in.hblnk;
         d1_in_text      <= in_text;
         d1_in_cursor    <= in_cursor;
         d1_px_h_in_char <= px_h_in_char;
     end
 end
 
-// --- ŁĄCZENIE KOLORÓW ---
+// --- CYKL 2: Drugi stopień opóźnień (Wyrównanie z wyjściem danych z FONT ROM) ---
+always_ff @(posedge clk) begin
+    if (!rst_n) begin
+        d2_vblnk        <= 1'b0;
+        d2_hblnk        <= 1'b0;
+        d2_in_text      <= 1'b0;
+        d2_in_cursor    <= 1'b0;
+        d2_px_h_in_char <= '0;
+    end else begin
+        d2_vblnk        <= d1_vblnk;
+        d2_hblnk        <= d1_hblnk;
+        d2_in_text      <= d1_in_text;
+        d2_in_cursor    <= d1_in_cursor;
+        d2_px_h_in_char <= d1_px_h_in_char;
+    end
+end
+
+// --- ŁĄCZENIE KOLORÓW (Logika kombinacyjna w Cyklu 2) ---
 always_comb begin
-    if(d1_hblnk || d1_vblnk || !enable_reg[0]) begin
+    if (d2_hblnk || d2_vblnk || !enable_reg[1]) begin
         rgb_nxt = 12'h0_0_0;
-        
-    end else if((d1_in_text || d1_in_cursor) && font_pixels[~d1_px_h_in_char]) begin 
-        if (d1_in_cursor) begin
+    end else if ((d2_in_text || d2_in_cursor) && font_pixels[~d2_px_h_in_char]) begin 
+        if (d2_in_cursor) begin
             rgb_nxt = CURSOR_COLOR;
         end else begin
             rgb_nxt = TEXT_COLOR;
@@ -163,16 +174,16 @@ always_comb begin
     end
 end
 
-// --- WYJŚCIOWY REJESTR ---
-always_ff @(posedge clk, negedge rst_n) begin
-    if(!rst_n) begin
-        rgb_out_choose_bg    <= '0;
-        enable_reg      <= '0;
-        enable_choose_out <= '0;
+// --- CYKL 3: Wyściowy rejestr (Ostateczne wystawienie stabilnego RGB) ---
+always_ff @(posedge clk) begin
+    if (!rst_n) begin
+        rgb_out_choose_bg  <= '0;
+        enable_reg         <= '0;
+        enable_choose_out  <= '0;
     end else begin
-        enable_reg      <= {enable_reg[0], enable_choose_in}; 
-        enable_choose_out <= enable_reg[1];
-        rgb_out_choose_bg    <= rgb_nxt;
+        enable_reg         <= {enable_reg[0], enable_choose_in}; 
+        enable_choose_out  <= enable_reg[1];
+        rgb_out_choose_bg  <= rgb_nxt;
     end
 end
 

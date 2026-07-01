@@ -117,10 +117,10 @@ module top_vga_basys3 (
      *  Project functional top module
      */
 
-    top_slave u_top_vga (
+    bg_testing u_top_vga (
         .clk(pclk),
         .rst_n(!btnC),
-        .UART_rx(JA1),
+        // .UART_rx(JA1),
         .r(vgaRed),
         .g(vgaGreen),
         .b(vgaBlue),

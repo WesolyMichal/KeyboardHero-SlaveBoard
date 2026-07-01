@@ -23,7 +23,7 @@ logic enter_nxt, esc_nxt, song_choosing_nxt, song_confirm_nxt;
 logic [1:0] song_select_nxt;
 game_if game_engine_buffer, game_engine_buffer_nxt, game_engine_nxt;
 
-always_ff @(negedge rst_n or posedge clk) begin
+always_ff @(posedge clk) begin
     if(!rst_n) begin
         enter <= '0;
         esc <= '0;

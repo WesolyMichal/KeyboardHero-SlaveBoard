@@ -22,7 +22,7 @@ enum logic [2:0] {INIT, WAIT_CONN, HOME_SCREEN, WAIT_HOMESCREEN, SONG_CHOOSE, PL
 logic [3:0] timer, timer_nxt;
 logic [1:0] master_song_nxt;
 
-always_ff @(posedge clk, negedge rst_n) begin
+always_ff @(posedge clk) begin
     if(!rst_n) begin
         state <= INIT;
         timer <= '0;

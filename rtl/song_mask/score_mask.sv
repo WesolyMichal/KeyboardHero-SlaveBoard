@@ -137,7 +137,7 @@ always_comb begin
 end
 
 // --- SYNCHRONIZACJA FLAG (Cykl 1) ---
-always_ff @(posedge clk, negedge rst_n) begin
+always_ff @(posedge clk) begin
     if(!rst_n) begin
         d1_in_score     <= 1'b0;
         d1_in_multi     <= 1'b0;
@@ -164,7 +164,7 @@ always_comb begin
 end
 
 // --- WYJŚCIOWY REJESTR ---
-always_ff @(posedge clk, negedge rst_n) begin
+always_ff @(posedge clk) begin
     if(!rst_n) begin
         vga_out.vcount   <= '0;
         vga_out.hcount   <= '0;

@@ -84,7 +84,7 @@ mux_bg u_mux_bg (
     .rgb_endscreen(rgb_out_endscreen_bg),
     .delay_vga_in(delay_vga_out),
     .enable_song_out(enable_song),
-    .vga_out(vga_out)
+    .vga_out
 );
 
 endmodule

@@ -133,13 +133,11 @@ timeprecision 1ps;
         .rst_n,
         .esc,
         .enter,
-        .song_choosing,
         .song_confirm,
         .master_song_select,
         .master_song,
         .enable_bgs_FSM,
         .final_note,
-        .enter_out,
         .status(game_engine.status)
     );
 

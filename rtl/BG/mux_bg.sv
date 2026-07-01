@@ -19,7 +19,7 @@ module mux_bg (
 logic [11:0] rgb_nxt;
 logic enable_song_out_next;
 
-always_ff @(posedge clk, negedge rst_n) begin
+always_ff @(posedge clk) begin
     if(!rst_n) begin
         vga_out.vcount <= '0;
         vga_out.vsync  <= '0;

@@ -13,7 +13,7 @@ module vga_timing (
 
     vga_if vga_out_nxt;
 
-    always_ff @(posedge clk or negedge rst_n) begin
+    always_ff @(posedge clk) begin
 
         if (!rst_n) begin
             vga_out.vcount <= '0;

@@ -20,7 +20,7 @@ assign dout = del_mem[CLK_DEL-1];
 /* -----------------------------------------------------------------------------
  * The first delay stage
  * -------------------------------------------------------------------------- */
-always_ff @(posedge clk ) begin //or negedge rst_n
+always_ff @(posedge clk) begin //or negedge rst_n
     if(!rst_n) begin
         del_mem[0] <= 0;
     end else begin

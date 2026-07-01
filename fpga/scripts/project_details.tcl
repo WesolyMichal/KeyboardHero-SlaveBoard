@@ -50,9 +50,10 @@ set sv_files {
     ../rtl/song_mask/note_fill_ctl.sv
     ../rtl/song_mask/score_counter.sv
     ../rtl/song_mask/score_mask.sv
-    ../rtl/song_mask/score_mask_pkg.sv
+    ../rtl/song_mask/song_mask_pkg.sv
     ../rtl/song_mask/song_mask.sv
     ../rtl/song_mask/timer.sv
+    ../rtl/uart/uart_reader.sv
     ../rtl/comm_decoder.sv
     ../rtl/delay.sv
     ../rtl/game_pkg.sv
@@ -61,6 +62,7 @@ set sv_files {
     ../rtl/top_slave.sv
     ../rtl/vga_pkg.sv
     ../rtl/vga_timing.sv
+    ../rtl/bg_testing.sv
     rtl/top_vga_basys3.sv
 }
 
@@ -71,7 +73,6 @@ set verilog_files {
     ../rtl/uart/fifo.v
     ../rtl/uart/flag_buf.v
     ../rtl/uart/mod_m_counter.v
-    ../rtl/uart/uart_reader.v
     ../rtl/uart/uart_rx.v
     ../rtl/uart/uart_tx.v
     ../rtl/uart/uart.v

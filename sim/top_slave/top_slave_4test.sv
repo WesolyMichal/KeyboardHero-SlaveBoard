@@ -52,12 +52,11 @@ module top_slave_4test (
         .rst_n,
         .enter,
         .esc,
-        .song_choosing,
         .song_confirm,
         .master_song_select(song_select),
         .enable_bgs_FSM,
+        .enter_out_FSM(enter_out),
         .final_note,
-        .enter_out,
         .master_song,
         .status(game_engine.status)
     );

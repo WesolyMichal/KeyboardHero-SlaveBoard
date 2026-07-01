@@ -47,7 +47,7 @@ module endscreen_bg_tb;
     );
 
     delay #(
-        .CLK_DEL(2),
+        .CLK_DEL(3),
         .WIDTH(38)
     ) u_delay_vga_tim (
         .clk(clk),

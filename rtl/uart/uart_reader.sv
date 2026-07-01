@@ -21,7 +21,7 @@ module uart_reader (
     state_t state;
 
     // Blok specyficzny dla przerzutników (always_ff)
-    always_ff @(posedge clk or negedge rst_n) begin
+    always_ff @(posedge clk) begin
         if (!rst_n) begin
             state      <= IDLE;
             rd_uart    <= 1'b0;

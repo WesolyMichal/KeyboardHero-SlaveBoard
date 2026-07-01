@@ -1,4 +1,5 @@
 import song_mask_pkg::*;
+import vga_pkg::*;
 
 module button_mask(
     input logic clk,

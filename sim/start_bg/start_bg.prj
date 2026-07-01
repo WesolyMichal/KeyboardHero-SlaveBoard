@@ -1,5 +1,5 @@
 sv work ../../rtl/vga_pkg.sv \
-        ../../rtl/buttons_pkg.sv \
+        ../../rtl/game_pkg.sv \
         ../../rtl/vga_timing.sv \
         ../../rtl/BG/start_bg.sv \
         ../../rtl/delay.sv \
