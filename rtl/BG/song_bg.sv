@@ -121,7 +121,7 @@ always_comb begin
 end
 
 // --- CYKL 1: Rejestracja adresu ROM oraz pierwszy stopień opóźnień ---
-always_ff @(posedge clk) begin
+always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         mibombo_addr    <= '0;
         d1_vblnk        <= 1'b0;
@@ -142,7 +142,7 @@ always_ff @(posedge clk) begin
 end
 
 // --- CYKL 2: Drugi stopień opóźnień (Wyrównanie z wyjściem mibombo_rom) ---
-always_ff @(posedge clk) begin
+always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         d2_vblnk        <= 1'b0;
         d2_hblnk        <= 1'b0;
@@ -183,7 +183,7 @@ always_comb begin
 end
 
 // --- CYKL 3: Wyjściowy rejestr ---
-always_ff @(posedge clk) begin
+always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         rgb_out_song_bg <= '0;
         enable_reg      <= '0;

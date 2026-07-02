@@ -3,7 +3,7 @@ module mibombo_rom (
     input  logic [15:0] addr,
     output logic mibombo_out
 );
-    logic [0:0] rom [0:63655];
+    (* rom_style = "block" *) logic [0:0] rom [0:63655];
 
     initial begin
         $readmemb("../../rtl/data/mibombo.data", rom);

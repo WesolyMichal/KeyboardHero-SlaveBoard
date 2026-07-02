@@ -134,7 +134,7 @@ end
 
 
 // --- CYKL 1: Rejestracja adresów ROM oraz pierwszy stopień opóźnień ---
-always_ff @(posedge clk) begin
+always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         logo_addr       <= '0;
         enter_addr      <= '0;
@@ -164,7 +164,7 @@ end
 
 
 // --- CYKL 2: Drugi stopień opóźnień ---
-always_ff @(posedge clk) begin
+always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         d2_vblnk        <= 1'b0;
         d2_hblnk        <= 1'b0;
@@ -204,7 +204,7 @@ end
 
 
 // --- Wyjściowy rejestr ---
-always_ff @(posedge clk) begin
+always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         rgb_out_start_bg <= '0;
         enable_reg       <= '0;

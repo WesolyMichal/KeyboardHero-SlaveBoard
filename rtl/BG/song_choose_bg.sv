@@ -120,7 +120,7 @@ always_comb begin
 end
 
 // --- CYKL 1: Rejestracja adresu ROM oraz pierwszy stopień opóźnień ---
-always_ff @(posedge clk) begin
+always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         selected_song   <= '0;
         font_addr       <= '0;
@@ -143,7 +143,7 @@ always_ff @(posedge clk) begin
 end
 
 // --- CYKL 2: Drugi stopień opóźnień (Wyrównanie z wyjściem danych z FONT ROM) ---
-always_ff @(posedge clk) begin
+always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         d2_vblnk        <= 1'b0;
         d2_hblnk        <= 1'b0;
@@ -175,7 +175,7 @@ always_comb begin
 end
 
 // --- CYKL 3: Wyściowy rejestr (Ostateczne wystawienie stabilnego RGB) ---
-always_ff @(posedge clk) begin
+always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         rgb_out_choose_bg  <= '0;
         enable_reg         <= '0;

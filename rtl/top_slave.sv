@@ -105,7 +105,7 @@ module top_slave (
         .master_song,
         .score_in(end_score),
         .vga_out(vga_bg)
-        // .vga_out()
+        // .vga_out
     );
 
     delay #(

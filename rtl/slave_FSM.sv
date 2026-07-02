@@ -22,7 +22,7 @@ enum logic [2:0] {INIT, WAIT_CONN, HOME_SCREEN, WAIT_HOMESCREEN, SONG_CHOOSE, PL
 logic [3:0] timer, timer_nxt;
 logic [1:0] master_song_nxt;
 
-always_ff @(posedge clk) begin
+always_ff @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         state <= INIT;
         timer <= '0;
@@ -37,6 +37,7 @@ end
 always_comb begin //obsuga stanow
     master_song_nxt = master_song;
     state_nxt = state;
+    timer_nxt = timer;
 
     case (state)
         INIT: state_nxt = WAIT_CONN;

@@ -12,6 +12,16 @@ module endscreen_bg (
     output logic enable_endscreen_out
 );
 
+// delay #(
+//     .CLK_DEL(3),
+//     .WIDTH(13)
+// ) test_delay(
+//     .clk,
+//     .rst_n,
+//     .din({vga_in.rgb, enable_endscreen_in}),
+//     .dout({rgb_out_endscreen_bg, enable_endscreen_out})
+// );
+
 // --- PARAMETRY --- 
 localparam [11:0] BG_COLOR = 12'h3_3_5;
 
@@ -155,8 +165,10 @@ always_comb begin
 
         if (px_in_star < STAR_LENGTH) begin
             in_star       = 1'b1;
-            // star_addr_nxt = (voff_star * STAR_LENGTH) + px_in_star; 
-            star_addr_nxt = '0;
+            // Zeby nie dodawalo do DSP, STAR_LENGTH = 50 = 110010 (2)
+            star_addr_nxt = voff_star << 1 + voff_star << 4 + voff_star << 5; 
+            star_addr_nxt += px_in_star; 
+
 
             if (star_idx == 0 && end_score >= 200) star_is_earned = 1'b1;
             if (star_idx == 1 && end_score >= 400) star_is_earned = 1'b1;
@@ -167,7 +179,7 @@ end
 
 
 // --- CYKL 1: Zatrzymywanie potoku i rejestracja danych ---
-always_ff @(posedge clk) begin
+always_ff @(posedge clk or negedge rst_n) begin
     // Adresy dla BRAM są poza warunkiem if(!rst_n). 
     // Odcina to asynchroniczny reset z modułu u_timing i eliminuje błąd Vivado.
     if (!rst_n) begin
@@ -208,7 +220,7 @@ end
 
 
 // --- CYKL 2: Drugi stopień opóźnień ---
-always_ff @(posedge clk) begin
+always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         d2_vblnk          <= 1'b0;
         d2_hblnk          <= 1'b0;
@@ -256,7 +268,7 @@ end
 
 
 // --- CYKL 3: Wyjściowy rejestr ---
-always_ff @(posedge clk) begin
+always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         rgb_out_endscreen_bg <= '0;
         enable_reg           <= '0;
