@@ -106,7 +106,7 @@ always_comb begin: note_addr_blk
 end: note_addr_blk
 
 always_comb begin: note_blk
-    current_note_nxt = current_note_nxt;
+    current_note_nxt = current_note;
 
     if(enable_in) begin
         case(state)

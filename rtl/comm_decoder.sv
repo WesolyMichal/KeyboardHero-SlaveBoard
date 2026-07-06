@@ -16,6 +16,8 @@ module comm_decoder(
     output logic enter,
     output logic esc,
 
+    output logic [13:0] led,
+
     output logic [1:0] song_select
 );
 
@@ -81,5 +83,12 @@ always_comb begin
         game_engine_nxt.status = PLAYER_IDLE;
     end        
 end
+
+assign led[7:0] = game_engine;
+assign led[8] = enter;
+assign led[9] = esc;
+assign led[10] = song_choosing;
+assign led[11] = song_confirm;
+assign led[13:12] = song_select;
 
 endmodule

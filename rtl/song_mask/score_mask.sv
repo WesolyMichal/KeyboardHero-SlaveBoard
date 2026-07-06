@@ -151,6 +151,8 @@ end
 
 // --- ŁĄCZENIE KOLORÓW (NAKŁADKA) ---
 always_comb begin
+    rgb_nxt = d1.rgb;
+
     if(d1.hblnk || d1.vblnk) begin
         rgb_nxt = 12'h0_0_0;
         
@@ -158,8 +160,6 @@ always_comb begin
         if((d1_in_score || d1_in_multi) && font_pixels[~d1_px_h_in_char]) begin
             rgb_nxt = TEXT_COLOR;
         end             
-    end else begin 
-        rgb_nxt = d1.rgb;
     end
 end
 

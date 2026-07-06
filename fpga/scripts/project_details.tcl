@@ -27,6 +27,8 @@ set target xc7a35tcpg236-1
 # Specify .xdc files location                   -- EDIT
 set xdc_files {
     constraints/top_vga_basys3.xdc
+    constraints/clk_wiz_0_late.xdc
+    constraints/clk_wiz_0.xdc
 }
 
 # Specify SystemVerilog design files location   -- EDIT
@@ -76,6 +78,8 @@ set verilog_files {
     ../rtl/uart/uart_rx.v
     ../rtl/uart/uart_tx.v
     ../rtl/uart/uart.v
+    rtl/clk_wiz_0_clk_wiz.v
+    rtl/clk_wiz_0.v
 }
 
 # Specify VHDL design files location            -- EDIT

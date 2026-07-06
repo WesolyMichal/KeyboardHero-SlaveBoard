@@ -9,7 +9,8 @@ module top_slave (
         output logic hs,
         output logic [3:0] r,
         output logic [3:0] g,
-        output logic [3:0] b
+        output logic [3:0] b,
+        output logic [13:0] led
     );
 
     timeunit 1ns;
@@ -41,14 +42,16 @@ module top_slave (
 
     assign vs = vga_out.vsync;
     assign hs = vga_out.hsync;
-    assign {r, g, b} = vga_out.rgb;
+    assign r = vga_out.rgb[11:8];
+    assign g = vga_out.rgb[7:4];
+    assign b = vga_out.rgb[3:0];
 
     /**
      * Submodules instances
      */
 
     uart #(
-        .DVSR(36)
+        .DVSR(35)
     )u_uart(
         .clk,
         .reset(!rst_n),
@@ -79,7 +82,8 @@ module top_slave (
         .game_engine,
         .song_choosing,
         .song_confirm,
-        .song_select
+        .song_select,
+        .led
     );
 
     slave_FSM u_slave_FSM(
