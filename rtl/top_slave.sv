@@ -10,7 +10,7 @@ module top_slave (
         output logic [3:0] r,
         output logic [3:0] g,
         output logic [3:0] b,
-        output logic [13:0] led
+        output logic [15:0] led
     );
 
     timeunit 1ns;
@@ -83,7 +83,7 @@ module top_slave (
         .song_choosing,
         .song_confirm,
         .song_select,
-        .led
+        .led(led[12:0])
     );
 
     slave_FSM u_slave_FSM(
@@ -97,7 +97,8 @@ module top_slave (
         .final_note,
         .enter_out_FSM(enter_out),
         .master_song,
-        .status(game_engine.status)
+        .status(game_engine.status),
+        .state_out(led[15:13])
     );
 
     top_bg u_top_bg(

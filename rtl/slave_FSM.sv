@@ -14,10 +14,14 @@ module slave_FSM (
 
     output logic [1:0] master_song,
     output game_pkg::enable_bgs enable_bgs_FSM,
-    output logic enter_out_FSM
+    output logic enter_out_FSM,
+
+    output logic [2:0] state_out
 );
 
 enum logic [2:0] {INIT, WAIT_CONN, HOME_SCREEN, WAIT_HOMESCREEN, SONG_CHOOSE, PLAY_SONG, ENDSCREEN} state, state_nxt;
+
+assign state_out = state;
 
 logic [3:0] timer, timer_nxt;
 logic [1:0] master_song_nxt;

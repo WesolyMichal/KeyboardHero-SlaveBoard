@@ -13,13 +13,14 @@
  */
 
 module top_vga_basys3 (
-        input  wire clk_in1,
+        input  wire clk,
         input  wire btnC,
         output wire Vsync,
         output wire Hsync,
         output wire [3:0] vgaRed,
         output wire [3:0] vgaGreen,
         output wire [3:0] vgaBlue,
+        output wire [15:0] led,
         input wire JA1
     );
 
@@ -54,7 +55,7 @@ module top_vga_basys3 (
      */
 
     clk_wiz_0 u_clk_wiz (
-        .clk_in1(clk_in1),
+        .clk_in1(clk),
         .locked,
         .clk_65MHz(pclk)
     );
@@ -99,7 +100,8 @@ module top_vga_basys3 (
         .g(vgaGreen),
         .b(vgaBlue),
         .hs(Hsync),
-        .vs(Vsync)
+        .vs(Vsync),
+        .led
     );
 
 endmodule
