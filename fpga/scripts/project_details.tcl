@@ -50,6 +50,7 @@ set sv_files {
     ../rtl/song_mask/song_player/song_player_out.sv
     ../rtl/song_mask/button_mask.sv
     ../rtl/song_mask/note_fill_ctl.sv
+    ../rtl/song_mask/fill_checker.sv
     ../rtl/song_mask/score_counter.sv
     ../rtl/song_mask/score_mask.sv
     ../rtl/song_mask/song_mask_pkg.sv

@@ -20,81 +20,131 @@ module note_fill_ctl #(
 
 logic [15:0] waiting_remaining, duration_remaining;
 logic [11:0] rgb_nxt;
+logic [31:0] y_scaled;
+
+logic enable_fill, enable_rgb;
+
+logic in_bar [0:2][0:5];
+
+logic [10:0] hcount_del;
+note_t current_note_del[0:2];
+
+delay #(
+    .CLK_DEL(3),
+    .WIDTH(27)
+) vga_delay (
+    .clk,
+    .rst_n,
+    .din({enable_in,
+          vga_in.hblnk,
+          vga_in.hcount,
+          vga_in.hsync,
+          vga_in.vblnk,
+          vga_in.vcount,
+          vga_in.vsync}),
+    .dout({enable_out,
+           vga_out.hblnk,
+           vga_out.hcount,
+           vga_out.hsync,
+           vga_out.vblnk,
+           vga_out.vcount,
+           vga_out.vsync})
+);
 
 always_ff @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        enable_out  <= '0;
-        vga_out     <= '0;
+        duration_remaining <= '0;
+        waiting_remaining <= '0;
+        y_scaled <= '0;
+        enable_fill <='0;
     end else begin
-        enable_out<= enable_in;
-        vga_out.hblnk <= vga_in.hblnk;
-        vga_out.hcount <= vga_in.hcount;
-        vga_out.hsync <= vga_in.hsync;
-        vga_out.rgb <= rgb_nxt;
-        vga_out.vblnk <= vga_in.vblnk;
-        vga_out.vcount <= vga_in.vcount;
-        vga_out.vsync <= vga_in.vsync;
+        if(timer < current_note[0].waiting) begin
+            duration_remaining <= current_note[0].duration;
+            waiting_remaining <= current_note[0].waiting - timer;
+        end else if(timer < current_note[0].waiting + current_note[0].duration) begin
+            duration_remaining <= current_note[0].duration - (timer - current_note[0].waiting);
+            waiting_remaining <= '0;
+        end else begin
+            duration_remaining <= '0;
+            waiting_remaining <= '0;
+        end
+
+        if (enable_in && vga_in.vcount < NOTE_DISPLAY_HEIGHT) begin
+
+            automatic logic [10:0] y_pixel = NOTE_DISPLAY_HEIGHT - 1 - vga_in.vcount;
+            y_scaled <= y_pixel * INV_SCALE;
+
+            enable_fill <= '1;
+
+        end else begin
+            y_scaled <= '0;
+            enable_fill <= '0;
+        end
+    end 
+end
+
+delay #(
+    .CLK_DEL(1),
+    .WIDTH(144)
+) note_delay(
+    .clk,
+    .rst_n,
+    .din({current_note[0],current_note[1],current_note[2]}),
+    .dout({current_note_del[0],current_note_del[1],current_note_del[2]})
+);
+
+genvar NOTE_NUM;
+genvar COLUMN_NUM;
+generate
+    for(NOTE_NUM = 0; NOTE_NUM < 3; NOTE_NUM++) begin: consecutive_blk
+        for(COLUMN_NUM = 0; COLUMN_NUM < 6; COLUMN_NUM++) begin: column_blk
+            fill_checker #(
+                .COLUMN(COLUMN_NUM),
+                .NOTE_NUM(NOTE_NUM),
+                .MINIMUM_HEIGHT(MINIMUM_HEIGHT)
+            ) u_fill_checker (
+                .clk,
+                .rst_n,
+                .duration_remaining,
+                .waiting_remaining,
+                .y_scaled,
+                .enable(enable_fill),
+                .current_note(current_note_del),
+                .in_bar(in_bar[NOTE_NUM][COLUMN_NUM])
+            );
+        end: column_blk
+    end: consecutive_blk
+endgenerate
+
+delay #(
+    .CLK_DEL(2),
+    .WIDTH(12)
+) enable_rgb_del (
+    .clk,
+    .rst_n,
+    .din({vga_in.hcount, enable_in}),
+    .dout({hcount_del, enable_rgb})
+);
+
+always_comb begin
+    rgb_nxt = vga_in.rgb;
+
+    if(enable_rgb) begin
+        for(logic[2:0] column = '0; column < 6; column++) begin
+            if((in_bar[0][column] | in_bar[1][column] | in_bar[2][column])
+            && (hcount_del >= COLUMN_XPOS[column])
+            && (hcount_del < COLUMN_XPOS[column] + COLUMN_WIDTH))
+            
+                rgb_nxt = COLUMN_COLOURS[column];
+        end
     end
 end
 
-always_comb begin
-
-    rgb_nxt = vga_in.rgb;
-    
-    if(timer < current_note[0].waiting) begin
-        duration_remaining = current_note[0].duration;
-        waiting_remaining = current_note[0].waiting - timer;
-    end else if(timer < current_note[0].waiting + current_note[0].duration) begin
-        duration_remaining = current_note[0].duration - (timer - current_note[0].waiting);
-        waiting_remaining = '0;
+always_ff @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        vga_out.rgb <= '0;
     end else begin
-        duration_remaining = '0;
-        waiting_remaining = '0;
-    end
-
-    if (enable_in && vga_in.vcount < NOTE_DISPLAY_HEIGHT) begin
-
-        automatic logic [10:0] y_pixel = NOTE_DISPLAY_HEIGHT - 1 - vga_in.vcount;
-        automatic logic [31:0] y_scaled = y_pixel * INV_SCALE;
-
-        for(logic [2:0] column = 0; column < 6; column++) begin
-
-            if((vga_in.hcount >= COLUMN_XPOS[column]) && (vga_in.hcount < COLUMN_XPOS[column] + COLUMN_WIDTH)) begin
-        
-                // ==================== NUTA 0 ====================
-                if(current_note[0].buttons[column]) begin
-                    automatic logic [15:0] margin       = (current_note[0].long[column]) ? 0 : MINIMUM_HEIGHT;
-                    automatic logic [31:0] bottom_bound = (waiting_remaining > margin) ? (waiting_remaining - margin) : '0;
-                    automatic logic [31:0] top_bound    = waiting_remaining + margin + (current_note[0].long[column] ? duration_remaining : '0);
-        
-                    if((y_scaled >= bottom_bound) && (y_scaled < top_bound))
-                        rgb_nxt = COLUMN_COLOURS[column];
-                end
-        
-                // ==================== NUTA 1 ====================
-                if(current_note[1].buttons[column]) begin
-                    automatic logic [15:0] margin       = (current_note[1].long[column]) ? 0 : MINIMUM_HEIGHT;
-                    automatic logic [31:0] base_pos     = waiting_remaining + duration_remaining + current_note[1].waiting;
-                    automatic logic [31:0] bottom_bound = (base_pos > margin) ? (base_pos - margin) : '0;
-                    automatic logic [31:0] top_bound    = base_pos + margin + (current_note[1].long[column] ? current_note[1].duration : '0);
-        
-                    if((y_scaled >= bottom_bound) && (y_scaled < top_bound))
-                        rgb_nxt = COLUMN_COLOURS[column];
-                end
-        
-                // ==================== NUTA 2 ====================
-                if(current_note[2].buttons[column]) begin
-                    automatic logic [15:0] margin       = (current_note[2].long[column]) ? 0 : MINIMUM_HEIGHT;
-                    automatic logic [31:0] base_pos     = waiting_remaining + duration_remaining + current_note[1].waiting + current_note[1].duration + current_note[2].waiting;
-                    automatic logic [31:0] bottom_bound = (base_pos > margin) ? (base_pos - margin) : '0;
-                    automatic logic [31:0] top_bound    = base_pos + margin + (current_note[2].long[column] ? current_note[2].duration : '0);
-        
-                    if((y_scaled >= bottom_bound) && (y_scaled < top_bound))
-                        rgb_nxt = COLUMN_COLOURS[column];
-                end
-        
-            end
-        end
+        vga_out.rgb <= rgb_nxt;
     end
 end
 

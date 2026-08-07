@@ -8,7 +8,7 @@ package vga_pkg;
         logic vblnk;
         logic hblnk;
         logic [11:0] rgb;
-    } vga_if;
+    } vga_if; //razem 38 bitów
 
     // Parameters for VGA Display 1024 x 768 @ 60fps using a 65 MHz clock;
     localparam HOR_PIXELS = 1024;

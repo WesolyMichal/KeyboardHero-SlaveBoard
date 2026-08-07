@@ -8,7 +8,11 @@ sv work ../../rtl/game_pkg.sv \
         ../../rtl/song_mask/song_player/song_player_out.sv \
         ../../rtl/song_mask/song_player/song_player.sv \
         ../../rtl/song_mask/note_fill_ctl.sv \
-        ../../rtl/song_mask/song_out_logic.sv \
+        ../../rtl/song_mask/fill_checker.sv \
         ../../rtl/song_mask/song_mask.sv \
         ../../rtl/song_mask/timer.sv \
+        ../../rtl/song_mask/score_mask.sv \
+        ../../rtl/song_mask/score_counter.sv \
+        ../../rtl/song_mask/button_mask.sv \
+        ../../rtl/rom/font_rom.sv \
         song_playing_tb.sv

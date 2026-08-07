@@ -120,9 +120,9 @@ module song_mask_tb;
         
         #(RST_START_TIME) rst_n = 1'b0;
 
-        song_select = 2'd2;
-        timer = 32'h0000;
-        note_addr = 8'h04;
+        song_select = 2'd0;
+        timer = 32'h05D0;
+        note_addr = 8'h00;
 
         #(RST_ACTIVE_TIME) rst_n = 1'b1;
 
@@ -135,10 +135,10 @@ module song_mask_tb;
         wait (vs == 1'b0);
         @(negedge vs) $display("Info: negedge VS at %t",$time);
         @(negedge vs) $display("Info: negedge VS at %t",$time);
-        // repeat(20) begin
-        //     @(negedge vs) $display("Info: negedge VS at %t",$time);
-        //     timer += 32'h0100;
-        // end
+        repeat(20) begin
+            @(negedge vs) $display("Info: negedge VS at %t",$time);
+            timer += 32'h0100;
+        end
         
         // End the simulation.
         $display("Simulation is over, check the waveforms.");
