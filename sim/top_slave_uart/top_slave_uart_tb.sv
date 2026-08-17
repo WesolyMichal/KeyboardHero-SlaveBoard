@@ -10,6 +10,11 @@ module top_slave_uart_tb;
 
     logic [7:0] msg;
 
+    wire vs, hs;
+    wire [3:0] r, g, b;
+
+    logic run_writer;
+
     wire logic master_to_slave;
 
     wire logic enter, esc, song_confirm;
@@ -49,11 +54,27 @@ module top_slave_uart_tb;
         // send(ENTER);
         // send(HALT);
 
-        for(logic [31:0] elapsed = 1; elapsed<=3000; elapsed++) begin
+        for(logic [31:0] elapsed = 1; elapsed<=30; elapsed++) begin
             #1ms;
             $display("%dms elapsed, state = %s", elapsed, state.name());
         end
         $finish;
+    end
+
+    initial begin
+            int unsigned frame_count = 0;
+            run_writer = 0;
+
+            forever begin
+                @(posedge vs) begin
+                    if(frame_count%5 == 0) begin 
+                        run_writer = 1;
+                        @(negedge clk65) run_writer = 0;
+                    
+                    frame_count++;
+                end
+            end
+        end
     end
 
     uart #(
@@ -70,7 +91,24 @@ module top_slave_uart_tb;
         .clk(clk65),
         .rst_n,
         .UART_rx(master_to_slave),
-        .led({state, song_select, song_confirm, esc, enter, game_engine})
+        .led({state, song_select, song_confirm, esc, enter, game_engine}),
+        .r,
+        .g,
+        .b,
+        .hs,
+        .vs
+    );
+
+    tiff_writer #(
+        .XDIM(16'd1344),
+        .YDIM(16'd806),
+        .FILE_DIR("../../results/frames")
+    ) u_tiff_writer (
+        .clk(clk),
+        .r({r,r}), // fabricate an 8-bit value
+        .g({g,g}), // fabricate an 8-bit value
+        .b({b,b}), // fabricate an 8-bit value
+        .go(run_writer)
     );
 
 endmodule

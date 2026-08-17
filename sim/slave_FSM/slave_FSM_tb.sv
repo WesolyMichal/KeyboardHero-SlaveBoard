@@ -40,7 +40,6 @@ timeprecision 1ps;
 
     wire logic [1:0] master_song;
     enable_bgs enable_bgs_FSM;
-    wire logic enter_out;
 
     task send(logic [7:0] msg);
         @(negedge clk) r_data = msg;
@@ -75,6 +74,8 @@ timeprecision 1ps;
         r_data = '0;
         repeat(5) @(negedge clk);
         rst_n = '1;
+
+        #5ms;
 
         send(ENTER);
         repeat(5) @(negedge clk);
