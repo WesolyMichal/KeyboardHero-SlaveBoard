@@ -76,7 +76,7 @@ always_comb begin
     voff_mibombo_r = '0;
 
     // 1. Logika GRYFU i Linii
-    if ((vga_in.hcount >= NECK_X && vga_in.hcount < NECK_X + NECK_WIDTH) && 
+    if ((vga_in.hcount >= NECK_X && vga_in.hcount <= NECK_X + NECK_WIDTH) && 
         (vga_in.vcount >= NECK_Y && vga_in.vcount < NECK_Y + NECK_HEIGHT)) begin
         
         in_neck = 1'b1;

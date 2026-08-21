@@ -10,7 +10,8 @@ package song_mask_pkg;
 
     localparam NOTE_DISPLAY_HEIGHT = 640;
 
-    localparam [10:0] COLUMN_XPOS[0:5] = {317, 381, 445, 509, 573, 637};
+    // First line of each of the six 64-pixel gryf columns.
+    localparam [10:0] COLUMN_XPOS[0:5] = {320, 384, 448, 512, 576, 640};
 
     localparam [11:0] COLUMN_COLOURS [0:5] = {COLOUR_RED,
                                               COLOUR_GREEN,
@@ -19,7 +20,9 @@ package song_mask_pkg;
                                               COLOUR_MAGENTA,
                                               COLOUR_CYAN};
 
-    localparam COLUMN_WIDTH = 30;
+    localparam COLUMN_WIDTH = 64;
+    localparam NOTE_WIDTH = 30;
+    localparam NOTE_OFFSET = (COLUMN_WIDTH - NOTE_WIDTH) / 2;
 
     localparam SCREEN_HEIGHT = 640;
 

@@ -1,3 +1,5 @@
+import vga_pkg::*;
+
 module endscreen_bg_tb;
 
     timeunit 1ns;

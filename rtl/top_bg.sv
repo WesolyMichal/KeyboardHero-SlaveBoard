@@ -6,7 +6,7 @@ module top_bg (
     input logic rst_n,
 
     input enter_in_FSM,
-    input [1:0] master_song,
+    input [2:0] master_song,
     input logic [15:0] score_in,
     input enable_bgs enable_backgrounds,
 

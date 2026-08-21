@@ -4,7 +4,7 @@ module song_choose_bg (
     input logic clk,
     input logic rst_n,               // Reset synchroniczny, aktywny stanem niskim
     input logic enable_choose_in,
-    input [1:0] master_song,
+    input [2:0] master_song,
 
     input vga_if vga_in,
     
@@ -42,7 +42,7 @@ localparam logic [0:TEXT_LEN-1] [7:0] SONG_4 = "5. Desert You   ";
 // --- SYGNAŁY WEWNĘTRZNE ---
 logic [11:0] rgb_nxt;
 logic [1:0] enable_reg;
-logic [1:0] selected_song;
+logic [2:0] selected_song;
 
 logic [15:0] hoff_text, voff_text;
 logic [7:0]  char_code;

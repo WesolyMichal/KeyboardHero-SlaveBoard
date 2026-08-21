@@ -49,9 +49,12 @@ module top_slave_uart_tb;
         #40ns;
         rst_n = '1;
 
-        // send(ENTER);
+        send(ENTER); //WAIT_CONN -> HOME_SCREEN
 
-        // send(ENTER);
+        send(ENTER);//HOME_SCREEN -> WAIT_HOMESCREEN -> SONG_CHOOSE
+        send({4'b0000, CHOOSE}); //1 song selected
+        send({4'b0001, CHOOSE}); //2 song selected
+        send({4'b0001, CONFIRM}); //2 song confirmed -> PLAY_SONG
         // send(HALT);
 
         for(logic [31:0] elapsed = 1; elapsed<=30; elapsed++) begin
@@ -62,18 +65,17 @@ module top_slave_uart_tb;
     end
 
     initial begin
-            int unsigned frame_count = 0;
+            automatic int unsigned frame_count = 0;
             run_writer = 0;
 
             forever begin
-                @(posedge vs) begin
+                @(posedge vs);
                     if(frame_count%5 == 0) begin 
                         run_writer = 1;
-                        @(negedge clk65) run_writer = 0;
-                    
+                        @(negedge clk65);
+                        run_writer = 0;
+                    end
                     frame_count++;
-                end
-            end
         end
     end
 
@@ -82,8 +84,7 @@ module top_slave_uart_tb;
     ) master_uart (
         .clk(clk40),
         .reset(!rst_n),
-        .tx(master_to_slave),
-        .w_data(msg),
+        .rd_uart(1'b0),
         .wr_uart(write)
     );
 
@@ -104,7 +105,7 @@ module top_slave_uart_tb;
         .YDIM(16'd806),
         .FILE_DIR("../../results/frames")
     ) u_tiff_writer (
-        .clk(clk),
+        .clk(clk65),
         .r({r,r}), // fabricate an 8-bit value
         .g({g,g}), // fabricate an 8-bit value
         .b({b,b}), // fabricate an 8-bit value

@@ -10,7 +10,8 @@ module top_slave (
         output logic [3:0] r,
         output logic [3:0] g,
         output logic [3:0] b,
-        output logic [15:0] led
+        output logic [15:0] led,
+        input logic [3:0] functional_buttons
     );
 
     timeunit 1ns;
@@ -26,7 +27,7 @@ module top_slave (
     wire logic enter, esc, song_choosing, song_confirm;
     wire logic enable_song_mask;
     wire game_if game_engine, game_engine_del;
-    wire logic [1:0] song_select, master_song, master_song_del; 
+    wire logic [2:0] song_select, master_song, master_song_del; 
 
     wire enable_bgs enable_bgs_FSM;
 
@@ -83,7 +84,8 @@ module top_slave (
         .song_choosing,
         .song_confirm,
         .song_select,
-        .led(led[12:0])
+        .led(led[12:0]),
+        .functional_buttons
     );
 
     slave_FSM u_slave_FSM(
@@ -125,7 +127,7 @@ module top_slave (
 
     delay #(
         .CLK_DEL(4),
-        .WIDTH(2)
+        .WIDTH(3)
     )  u_delay_select (
         .clk,
         .rst_n,

@@ -1,4 +1,5 @@
 import game_pkg::*;
+import vga_pkg::*;
 
 module top_bg_tb;
 

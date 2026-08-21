@@ -6,13 +6,13 @@ module slave_FSM (
     input logic final_note,
 
     input logic song_confirm,
-    input logic [1:0] master_song_select,
+    input logic [2:0] master_song_select,
 
     input logic enter,
     input logic esc,
     input game_action status,
 
-    output logic [1:0] master_song,
+    output logic [2:0] master_song,
     output game_pkg::enable_bgs enable_bgs_FSM,
     output logic enter_out_FSM,
 
@@ -23,8 +23,10 @@ enum logic [2:0] {INIT, WAIT_CONN, HOME_SCREEN, WAIT_HOMESCREEN, SONG_CHOOSE, PL
 
 assign state_out = state;
 
-logic [3:0] timer, timer_nxt;
-logic [1:0] master_song_nxt;
+logic [2:0] master_song_nxt;
+
+localparam integer TIMER_1S = 25_000_000;
+logic [25:0] timer, timer_nxt;
 
 always_ff @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
@@ -52,7 +54,7 @@ always_comb begin //obsuga stanow
                         end
         HOME_SCREEN:    if (enter) begin
                             state_nxt = WAIT_HOMESCREEN;
-                            timer_nxt = 10;
+                            timer_nxt = TIMER_1S - 1;
                         end else begin 
                             state_nxt = HOME_SCREEN;
                         end
@@ -90,12 +92,12 @@ always_comb begin //obsuga stanow
 end
 
 always_comb begin //obsuga wyjsc
-    enable_bgs_FSM.enable_start = (state == (HOME_SCREEN || WAIT_HOMESCREEN));
-    enable_bgs_FSM.enable_song_choose = (state == SONG_CHOOSE);
-    enable_bgs_FSM.enable_song = (state == PLAY_SONG);
-    enable_bgs_FSM.enable_endscreen = (state == ENDSCREEN);
+    enable_bgs_FSM.enable_start = (state inside {HOME_SCREEN, WAIT_HOMESCREEN});
+    enable_bgs_FSM.enable_song_choose = (state inside {SONG_CHOOSE});
+    enable_bgs_FSM.enable_song = (state inside {PLAY_SONG});
+    enable_bgs_FSM.enable_endscreen = (state inside {ENDSCREEN});
     
-    enter_out_FSM = (state == WAIT_HOMESCREEN);
+    enter_out_FSM = (state inside {WAIT_HOMESCREEN});
 end
 
 endmodule

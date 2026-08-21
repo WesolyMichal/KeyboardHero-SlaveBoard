@@ -1,4 +1,5 @@
 import game_pkg::*;
+import vga_pkg::*;
 
 module song_mask4test (
     input logic clk,

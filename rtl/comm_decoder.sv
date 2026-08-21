@@ -18,12 +18,16 @@ module comm_decoder(
 
     output logic [12:0] led,
 
-    output logic [1:0] song_select
+    output logic [2:0] song_select,
+    input logic [3:0] functional_buttons
 );
 
 logic enter_nxt, esc_nxt, song_choosing_nxt, song_confirm_nxt;
-logic [1:0] song_select_nxt;
+logic [2:0] song_select_nxt;
 game_if game_engine_nxt;
+
+logic [3:0] functional_buttons_prev;
+logic [3:0] functional_buttons_rise;
 
 always_ff @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
@@ -59,15 +63,29 @@ always_comb begin
             HALT: esc_nxt = 1'b1;
             ENTER: enter_nxt = 1'b1;
             {4'b00xx, CHOOSE}: begin
-                song_select_nxt = r_data[5:4];
+                song_select_nxt = r_data[6:4];
                 song_choosing_nxt = 1'b1;
             end
             {4'b00xx, CONFIRM}: begin
-                song_select_nxt = r_data[5:4];
+                song_select_nxt = r_data[6:4];
                 song_confirm_nxt = 1'b1;
             end
         endcase
     end
+    
+     if (functional_buttons_rise[2]) begin
+        song_choosing_nxt = 1'b1;
+        if (song_select == 3'd4)
+            song_select_nxt = 3'd0;
+         else
+            song_select_nxt = song_select + 3'd1;
+    end else if (functional_buttons_rise[3]) begin
+        song_confirm_nxt = 1'b1;
+    end
+    
+    esc_nxt = esc_nxt | functional_buttons_rise[0];
+    enter_nxt = enter_nxt | functional_buttons_rise[1];
+
 end
 
 always_comb begin
@@ -84,10 +102,24 @@ always_comb begin
     end        
 end
 
+
+always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        functional_buttons_prev <= '0;
+    end else begin
+        functional_buttons_prev <= functional_buttons;
+    end
+end
+
+always_comb begin
+    functional_buttons_rise =
+        functional_buttons & ~functional_buttons_prev;
+end
+
 assign led[7:0] = game_engine;
 assign led[8] = enter;
 assign led[9] = esc;
 assign led[10] = song_confirm;
-assign led[12:11] = song_select;
+assign led[12:11] = song_select[1:0];
 
 endmodule

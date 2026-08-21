@@ -15,6 +15,10 @@
 module top_vga_basys3 (
         input  wire clk,
         input  wire btnC,
+        input wire btnU, //ESC
+        input wire btnD, //ENTER
+        input wire btnL, //LEFT
+        input wire btnR, //RIGHT
         output wire Vsync,
         output wire Hsync,
         output wire [3:0] vgaRed,
@@ -35,6 +39,8 @@ module top_vga_basys3 (
     wire pclk;
     wire pclk_mirror;
     wire UART_rx;
+    wire [3:0] functional_buttons;
+
 
     (* KEEP = "TRUE" *)
     (* ASYNC_REG = "TRUE" *)
@@ -48,6 +54,7 @@ module top_vga_basys3 (
      */
 
     assign UART_rx = JA1;
+    
 
 
     /**
@@ -90,7 +97,43 @@ module top_vga_basys3 (
         .b(vgaBlue),
         .hs(Hsync),
         .vs(Vsync),
-        .led
+        .led,
+        .functional_buttons
+    );
+
+    wire esc_button_db, enter_button_db, left_button_db, right_button_db;
+    assign functional_buttons = {right_button_db, left_button_db, enter_button_db, esc_button_db};
+
+    debounce debounce_esc (
+        .clk(pclk),
+        .reset(btnC),
+        .sw(btnU),
+        .db_level(esc_button_db),
+        .db_tick()
+    );
+
+    debounce debounce_enter (
+        .clk(pclk),
+        .reset(btnC),
+        .sw(btnD),
+        .db_level(enter_button_db),
+        .db_tick()
+    );
+
+    debounce debounce_left (
+        .clk(pclk),
+        .reset(btnC),
+        .sw(btnL),
+        .db_level(),
+        .db_tick(left_button_db)
+    );
+
+    debounce debounce_right (
+        .clk(pclk),
+        .reset(btnC),
+        .sw(btnR),
+        .db_level(),
+        .db_tick(right_button_db)
     );
 
 endmodule

@@ -1,5 +1,6 @@
 import game_pkg::*;
 import song_mask_pkg::*;
+import vga_pkg::*;
 
 module note_fill_ctl #(
     parameter INV_SCALE = 20,
@@ -132,8 +133,8 @@ always_comb begin
     if(enable_rgb) begin
         for(logic[2:0] column = '0; column < 6; column++) begin
             if((in_bar[0][column] | in_bar[1][column] | in_bar[2][column])
-            && (hcount_del >= COLUMN_XPOS[column])
-            && (hcount_del < COLUMN_XPOS[column] + COLUMN_WIDTH))
+            && (hcount_del >= COLUMN_XPOS[column] + NOTE_OFFSET)
+            && (hcount_del < COLUMN_XPOS[column] + NOTE_OFFSET + NOTE_WIDTH))
             
                 rgb_nxt = COLUMN_COLOURS[column];
         end

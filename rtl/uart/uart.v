@@ -20,7 +20,7 @@ module uart
    );
 
    // signal declaration
-   wire tick, rx_done_tick, tx_done_tick;
+   wire tick, rx_done_tick, tx_done_tick, tx_empty;
    wire tx_fifo_not_empty;
    wire [7:0] tx_fifo_out, rx_data_out;
 
