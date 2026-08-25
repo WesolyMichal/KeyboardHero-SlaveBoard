@@ -1,0 +1,9 @@
+sv work ../../rtl/game_pkg.sv \
+        ../../rtl/uart/uart_reader.sv \
+        uart_tests.sv
+
+verilog work ../../rtl/uart/fifo.v \
+             ../../rtl/uart/mod_m_counter.v \
+             ../../rtl/uart/uart_rx.v \
+             ../../rtl/uart/uart_tx.v \
+             ../../rtl/uart/uart.v

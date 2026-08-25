@@ -16,6 +16,9 @@ import game_pkg::*;
 
 // --- PARAMETRY --- 
 localparam [11:0] BG_COLOR = 12'h3_3_5;
+localparam [11:0] GAME_NAME_COLOR = 12'hf_f_0;
+localparam [11:0] AUTHORS_COLOR = 12'hf_f_f;
+
 localparam LOGO_X = 0;
 localparam LOGO_Y = 640;
 localparam LOGO_LENGTH = 48; 
@@ -30,30 +33,45 @@ localparam ENTER_WIDTH  = 64;
 localparam ENTER_SCALE = 2; 
 localparam ENTER_ADDR_SHIFT = $clog2(ENTER_SCALE);
 
-localparam TEXT_X = 96;
-localparam TEXT_Y = 200;
-localparam TEXT_LENGTH = 13; 
-localparam TEXT_WIDTH  = TEXT_LENGTH * 8;
-localparam TEXT_HEIGHT = 16;
-localparam TEXT_SCALE = 8; 
-localparam TEXT_ADDR_SHIFT = $clog2(TEXT_SCALE);
+localparam BASE_CHAR_WIDTH = 8;
+localparam BASE_CHAR_HEIGHT = 16;
 
-localparam logic [0:TEXT_LENGTH-1] [7:0] TEXT = "Keyboard-Hero";
+localparam GAME_NAME_X = 96;
+localparam GAME_NAME_Y = 200;
+localparam GAME_NAME_LENGTH = 13;
+localparam GAME_NAME_SCALE = 8;
+localparam GAME_NAME_ADDR_SHIFT = $clog2(GAME_NAME_SCALE);
+localparam logic [0:GAME_NAME_LENGTH-1] [7:0] GAME_NAME = "Keyboard-Hero";
+
+localparam AUTHORS_X = 190; 
+localparam AUTHORS_Y = 720;
+localparam AUTHORS_LENGTH = 51;
+localparam AUTHORS_SCALE = 2;
+localparam AUTHORS_ADDR_SHIFT = $clog2(AUTHORS_SCALE);
+localparam logic [0:AUTHORS_LENGTH-1] [7:0] Authors = "GAME DEVELOPED BY MICHAL WESOLOWSKI AND JAKUB SUDER";
+
+
+
 
 // --- SYGNAŁY WEWNĘTRZNE ---
 logic [11:0] rgb_nxt;
 
-logic [6:0] voff_text;
-logic [7:0] hoff_text;
+logic [6:0] voff_game_name;
+logic [7:0] hoff_game_name;
 logic [7:0] char_code;
 logic [2:0] px_h_in_char;
+logic [6:0] voff_button;
+logic [7:0] hoff_button;
+logic [6:0] voff_authors;
+logic [8:0] hoff_authors;
 
 // Rejestry potoku (Pipeline) do synchronizacji z opóźnieniem pamięci ROM (2 cykle opóźnienia)
 logic d1_vblnk, d2_vblnk;
 logic d1_hblnk, d2_hblnk;
 logic in_logo, d1_in_logo, d2_in_logo;
 logic in_button, d1_in_button, d2_in_button;
-logic in_text, d1_in_text, d2_in_text;
+logic in_game_name, d1_in_game_name, d2_in_game_name;
+logic in_authors, d1_in_authors, d2_in_authors;
 logic [2:0] d1_px_h_in_char, d2_px_h_in_char;
 logic d1_enter, d2_enter;
 
@@ -100,7 +118,8 @@ always_comb begin
     
     in_logo   = 1'b0;
     in_button = 1'b0;
-    in_text   = 1'b0;
+    in_game_name = 1'b0;
+    in_authors = 1'b0;
     
     char_code    = '0;
     px_h_in_char = '0;
@@ -108,27 +127,41 @@ always_comb begin
     // Logika ENTER
     if ((vga_in.hcount >= ENTER_X && vga_in.vcount >= ENTER_Y) && 
         (vga_in.hcount < ENTER_X + (ENTER_LENGTH * ENTER_SCALE) && vga_in.vcount < ENTER_Y + (ENTER_WIDTH * ENTER_SCALE))) begin
-        in_button = 1'b1;
-        enter_addr_nxt = { 6'((vga_in.vcount - ENTER_Y) >> ENTER_ADDR_SHIFT), 7'((vga_in.hcount - ENTER_X) >> ENTER_ADDR_SHIFT) };
+            in_button = 1'b1;
+            hoff_button = (vga_in.hcount - ENTER_X) >> ENTER_ADDR_SHIFT;
+            voff_button = (vga_in.vcount - ENTER_Y) >> ENTER_ADDR_SHIFT;
+
+            enter_addr_nxt = {voff_button[5:0], hoff_button[6:0]};
     end
 
     // Logika LOGO
     if ((vga_in.hcount >= LOGO_X && vga_in.vcount >= LOGO_Y) && 
         (vga_in.hcount < LOGO_X + (LOGO_LENGTH * LOGO_SCALE) && vga_in.vcount < LOGO_Y + (LOGO_WIDTH * LOGO_SCALE))) begin
-        in_logo = 1'b1;
-        logo_addr_nxt = { 6'((vga_in.vcount - LOGO_Y) >> LOGO_ADDR_SHIFT), 6'((vga_in.hcount - LOGO_X) >> LOGO_ADDR_SHIFT) };
+            in_logo = 1'b1;
+            logo_addr_nxt = { 6'((vga_in.vcount - LOGO_Y) >> LOGO_ADDR_SHIFT), 6'((vga_in.hcount - LOGO_X) >> LOGO_ADDR_SHIFT) };
     end
 
-    // Logika TEXT
-    if ((vga_in.hcount >= TEXT_X && vga_in.hcount < TEXT_X + (TEXT_WIDTH << TEXT_ADDR_SHIFT)) && 
-        (vga_in.vcount >= TEXT_Y && vga_in.vcount < TEXT_Y + (TEXT_HEIGHT << TEXT_ADDR_SHIFT))) begin
-        in_text = 1'b1;
-        hoff_text = (vga_in.hcount - TEXT_X) >> TEXT_ADDR_SHIFT;
-        voff_text = (vga_in.vcount - TEXT_Y) >> TEXT_ADDR_SHIFT;
-    
-        char_code = TEXT[ hoff_text / 8 ]; 
-        font_addr_nxt = { char_code[6:0], 4'(voff_text[3:0]) };
-        px_h_in_char = hoff_text[2:0];
+    // Logika GAME_NAME
+    if ((vga_in.hcount >= GAME_NAME_X && vga_in.hcount < GAME_NAME_X + GAME_NAME_LENGTH * BASE_CHAR_WIDTH * GAME_NAME_SCALE) &&
+        (vga_in.vcount >= GAME_NAME_Y && vga_in.vcount < GAME_NAME_Y + BASE_CHAR_HEIGHT * GAME_NAME_SCALE)) begin
+            in_game_name = 1'b1;
+            hoff_game_name = (vga_in.hcount - GAME_NAME_X) >> GAME_NAME_ADDR_SHIFT;
+            voff_game_name = (vga_in.vcount - GAME_NAME_Y) >> GAME_NAME_ADDR_SHIFT;
+        
+            char_code = GAME_NAME[hoff_game_name / BASE_CHAR_WIDTH];
+            font_addr_nxt = { char_code[6:0], 4'(voff_game_name[3:0]) };
+            px_h_in_char = hoff_game_name[2:0];
+    end
+
+    if ((vga_in.hcount >= AUTHORS_X && vga_in.hcount < AUTHORS_X + AUTHORS_LENGTH * BASE_CHAR_WIDTH * AUTHORS_SCALE) &&
+        (vga_in.vcount >= AUTHORS_Y && vga_in.vcount < AUTHORS_Y + BASE_CHAR_HEIGHT * AUTHORS_SCALE)) begin
+            in_authors = 1'b1;
+            hoff_authors = (vga_in.hcount - AUTHORS_X) >> AUTHORS_ADDR_SHIFT;
+            voff_authors = (vga_in.vcount - AUTHORS_Y) >> AUTHORS_ADDR_SHIFT;
+
+            char_code = Authors[hoff_authors >> 3];
+            font_addr_nxt = {char_code[6:0], 4'(voff_authors[3:0])};
+            px_h_in_char  = hoff_authors[2:0];
     end
 end
 
@@ -144,7 +177,8 @@ always_ff @(posedge clk or negedge rst_n) begin
         d1_hblnk        <= 1'b0;
         d1_in_logo      <= 1'b0;
         d1_in_button    <= 1'b0;
-        d1_in_text      <= 1'b0;
+        d1_in_game_name <= 1'b0;
+        d1_in_authors   <= 1'b0;
         d1_px_h_in_char <= '0;
         d1_enter        <= 1'b0;
     end else begin
@@ -156,7 +190,8 @@ always_ff @(posedge clk or negedge rst_n) begin
         d1_hblnk        <= vga_in.hblnk;
         d1_in_logo      <= in_logo;
         d1_in_button    <= in_button;
-        d1_in_text      <= in_text;
+        d1_in_game_name <= in_game_name;
+        d1_in_authors   <= in_authors;
         d1_px_h_in_char <= px_h_in_char;
         d1_enter        <= enter;
     end
@@ -170,7 +205,8 @@ always_ff @(posedge clk or negedge rst_n) begin
         d2_hblnk        <= 1'b0;
         d2_in_logo      <= 1'b0;
         d2_in_button    <= 1'b0;
-        d2_in_text      <= 1'b0;
+        d2_in_game_name <= 1'b0;
+        d2_in_authors   <= 1'b0;
         d2_px_h_in_char <= '0;
         d2_enter        <= 1'b0;
     end else begin
@@ -178,7 +214,8 @@ always_ff @(posedge clk or negedge rst_n) begin
         d2_hblnk        <= d1_hblnk;
         d2_in_logo      <= d1_in_logo;
         d2_in_button    <= d1_in_button;
-        d2_in_text      <= d1_in_text;
+        d2_in_game_name <= d1_in_game_name;
+        d2_in_authors   <= d1_in_authors;
         d2_px_h_in_char <= d1_px_h_in_char;
         d2_enter        <= d1_enter;
     end
@@ -195,8 +232,10 @@ always_comb begin
         rgb_nxt = enter_bit ? 12'hf_f_f : 12'h0_0_0;
         if (d2_enter)
             rgb_nxt = ~rgb_nxt;
-    end else if (d2_in_text && font_pixels[~d2_px_h_in_char]) begin 
-        rgb_nxt = 12'hf_f_0;
+    end else if (d2_in_game_name && font_pixels[~d2_px_h_in_char]) begin 
+        rgb_nxt = GAME_NAME_COLOR;
+    end else if (d2_in_authors && font_pixels[~d2_px_h_in_char]) begin 
+        rgb_nxt = AUTHORS_COLOR;
     end else begin  
         rgb_nxt = BG_COLOR;
     end

@@ -83,7 +83,9 @@ song_player u_song_player(
     .vga_out(vga_player)
 );
 
-note_fill_ctl u_note_fill(
+note_fill_ctl #(
+    .INV_SCALE(2)
+)u_note_fill(
     .clk,
     .rst_n,
     .current_note(note_player),

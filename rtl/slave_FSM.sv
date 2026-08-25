@@ -15,11 +15,12 @@ module slave_FSM (
     output logic [2:0] master_song,
     output game_pkg::enable_bgs enable_bgs_FSM,
     output logic enter_out_FSM,
+    output logic [1:0] screen_led,
 
     output logic [2:0] state_out
 );
 
-enum logic [2:0] {INIT, WAIT_CONN, HOME_SCREEN, WAIT_HOMESCREEN, SONG_CHOOSE, PLAY_SONG, ENDSCREEN} state, state_nxt;
+enum logic [2:0] {WAIT_CONN, HOME_SCREEN, WAIT_HOMESCREEN, SONG_CHOOSE, PLAY_SONG, ENDSCREEN} state, state_nxt;
 
 assign state_out = state;
 
@@ -30,7 +31,7 @@ logic [25:0] timer, timer_nxt;
 
 always_ff @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        state <= INIT;
+        state <= WAIT_CONN;
         timer <= '0;
         master_song <= '0;
     end else begin
@@ -46,7 +47,6 @@ always_comb begin //obsuga stanow
     timer_nxt = timer;
 
     case (state)
-        INIT: state_nxt = WAIT_CONN;
         WAIT_CONN:      if (enter) begin
                             state_nxt = HOME_SCREEN;
                         end else begin
@@ -74,11 +74,11 @@ always_comb begin //obsuga stanow
                             master_song_nxt = master_song_select;
                             state_nxt = SONG_CHOOSE;
                         end
-        PLAY_SONG:      if (status == END_GAME || final_note) begin
-                            state_nxt = ENDSCREEN;
-                        end else if (esc) begin
+        PLAY_SONG:      if (esc) begin
                             state_nxt = SONG_CHOOSE;
                             master_song_nxt = '0;
+                        end else if (status == END_GAME || final_note) begin
+                            state_nxt = ENDSCREEN;
                         end else begin 
                             state_nxt = PLAY_SONG;
                         end
@@ -98,6 +98,15 @@ always_comb begin //obsuga wyjsc
     enable_bgs_FSM.enable_endscreen = (state inside {ENDSCREEN});
     
     enter_out_FSM = (state inside {WAIT_HOMESCREEN});
+end
+
+always_comb begin
+    case (enable_bgs_FSM)
+        4'b0001:   screen_led = 2'b11;
+        4'b0010:   screen_led = 2'b10;
+        4'b0100:   screen_led = 2'b01;
+        4'b1000:   screen_led = 2'b00;
+    endcase
 end
 
 endmodule

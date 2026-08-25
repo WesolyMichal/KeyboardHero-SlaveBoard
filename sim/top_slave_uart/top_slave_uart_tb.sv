@@ -19,7 +19,7 @@ module top_slave_uart_tb;
 
     wire logic enter, esc, song_confirm;
     wire logic [1:0] song_select;
-    enum logic [2:0] {INIT, WAIT_CONN, HOME_SCREEN, WAIT_HOMESCREEN, SONG_CHOOSE, PLAY_SONG, ENDSCREEN} state;
+    enum logic [2:0] {WAIT_CONN, HOME_SCREEN, WAIT_HOMESCREEN, SONG_CHOOSE, PLAY_SONG, ENDSCREEN} state;
     game_if game_engine;
 
     localparam real CLK_65_PERIOD = 15.3846;     // ok.65 MHz
@@ -85,7 +85,9 @@ module top_slave_uart_tb;
         .clk(clk40),
         .reset(!rst_n),
         .rd_uart(1'b0),
-        .wr_uart(write)
+        .wr_uart(write),
+        .w_data(msg),
+        .tx(master_to_slave)
     );
 
     top_slave dut(

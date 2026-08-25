@@ -23,6 +23,7 @@ module top_slave (
     
     wire logic [7:0] MSG, r_data;
     wire logic rd_uart, rx_empty, read_data;
+    wire logic [12:0] comm_led;
 
     wire logic enter, esc, song_choosing, song_confirm;
     wire logic enable_song_mask;
@@ -32,6 +33,8 @@ module top_slave (
     wire enable_bgs enable_bgs_FSM;
 
     wire final_note, enter_out;
+    wire logic [1:0] screen_led;
+    wire logic [2:0] state_led;
     wire [15:0] end_score;
 
     // VGA interfaces
@@ -47,12 +50,19 @@ module top_slave (
     assign g = vga_out.rgb[7:4];
     assign b = vga_out.rgb[3:0];
 
+    always_comb begin
+        led = '0;
+        led[12:0] = comm_led;
+        led[9:8] = screen_led;
+        led[15:13] = state_led;
+    end
+
     /**
      * Submodules instances
      */
 
     uart #(
-        .DVSR(35)
+        .DVSR(36)
     )u_uart(
         .clk,
         .reset(!rst_n),
@@ -84,7 +94,7 @@ module top_slave (
         .song_choosing,
         .song_confirm,
         .song_select,
-        .led(led[12:0]),
+        .led(comm_led),
         .functional_buttons
     );
 
@@ -100,7 +110,8 @@ module top_slave (
         .enter_out_FSM(enter_out),
         .master_song,
         .status(game_engine.status),
-        .state_out(led[15:13])
+        .screen_led,
+        .state_out(state_led)
     );
 
     top_bg u_top_bg(

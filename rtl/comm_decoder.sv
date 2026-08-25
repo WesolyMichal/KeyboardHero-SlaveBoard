@@ -86,6 +86,9 @@ always_comb begin
     esc_nxt = esc_nxt | functional_buttons_rise[0];
     enter_nxt = enter_nxt | functional_buttons_rise[1];
 
+    if (esc_nxt)
+        song_select_nxt = '0;
+
 end
 
 always_comb begin
@@ -117,8 +120,6 @@ always_comb begin
 end
 
 assign led[7:0] = game_engine;
-assign led[8] = enter;
-assign led[9] = esc;
 assign led[10] = song_confirm;
 assign led[12:11] = song_select[1:0];
 

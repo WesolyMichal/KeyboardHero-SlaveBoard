@@ -1,0 +1,8 @@
+sv work ../../rtl/game_pkg.sv \
+        ../../rtl/vga_pkg.sv \
+        ../../rtl/vga_timing.sv \
+        ../../rtl/BG/song_choose_bg.sv \
+        ../../rtl/delay.sv \
+        ../../rtl/rom/font_rom.sv \
+        ../common/tiff_writer.sv \
+        song_choose_bg_tb.sv

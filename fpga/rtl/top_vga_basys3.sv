@@ -36,7 +36,7 @@ module top_vga_basys3 (
      */
 
     wire locked;
-    wire pclk;
+    wire clk65;
     wire pclk_mirror;
     wire UART_rx;
     wire [3:0] functional_buttons;
@@ -64,7 +64,7 @@ module top_vga_basys3 (
     clk_wiz_0 u_clk_wiz (
         .clk_in1(clk),
         .locked,
-        .clk_65MHz(pclk)
+        .clk_65MHz(clk65)
     );
 
     
@@ -75,7 +75,7 @@ module top_vga_basys3 (
 
     ODDR pclk_oddr (
         .Q(pclk_mirror),
-        .C(pclk),
+        .C(clk65),
         .CE(1'b1),
         .D1(1'b1),
         .D2(1'b0),
@@ -89,7 +89,7 @@ module top_vga_basys3 (
      */
 
     top_slave u_top_slave (
-        .clk(pclk),
+        .clk(clk65),
         .rst_n(!btnC),
         .UART_rx,
         .r(vgaRed),
@@ -105,7 +105,7 @@ module top_vga_basys3 (
     assign functional_buttons = {right_button_db, left_button_db, enter_button_db, esc_button_db};
 
     debounce debounce_esc (
-        .clk(pclk),
+        .clk(clk65),
         .reset(btnC),
         .sw(btnU),
         .db_level(esc_button_db),
@@ -113,7 +113,7 @@ module top_vga_basys3 (
     );
 
     debounce debounce_enter (
-        .clk(pclk),
+        .clk(clk65),
         .reset(btnC),
         .sw(btnD),
         .db_level(enter_button_db),
@@ -121,7 +121,7 @@ module top_vga_basys3 (
     );
 
     debounce debounce_left (
-        .clk(pclk),
+        .clk(clk65),
         .reset(btnC),
         .sw(btnL),
         .db_level(),
@@ -129,7 +129,7 @@ module top_vga_basys3 (
     );
 
     debounce debounce_right (
-        .clk(pclk),
+        .clk(clk65),
         .reset(btnC),
         .sw(btnR),
         .db_level(),
