@@ -27,8 +27,8 @@ module top_slave (
 
     wire logic enter, esc, song_choosing, song_confirm;
     wire logic enable_song_mask;
-    wire game_if game_engine, game_engine_del;
-    wire logic [2:0] song_select, master_song, master_song_del; 
+    wire game_if game_engine;
+    wire logic [2:0] song_select, master_song; 
 
     wire enable_bgs enable_bgs_FSM;
 
@@ -126,26 +126,6 @@ module top_slave (
         // .vga_out
     );
 
-    delay #(
-        .CLK_DEL(5),
-        .WIDTH(8)
-    )  u_delay_game (
-        .clk,
-        .rst_n,
-        .din(game_engine),
-        .dout(game_engine_del)
-    );
-
-    delay #(
-        .CLK_DEL(4),
-        .WIDTH(3)
-    )  u_delay_select (
-        .clk,
-        .rst_n,
-        .din(master_song),
-        .dout(master_song_del)
-    );
-
     song_mask u_song_mask(
         .clk,
         .rst_n,
@@ -153,8 +133,8 @@ module top_slave (
         .vga_out,
         .final_note,
         .end_score,
-        .song_select(master_song_del),
-        .game_engine(game_engine_del),
+        .song_select(master_song),
+        .game_engine(game_engine),
         .enable_in(enable_song_mask)
     );
 

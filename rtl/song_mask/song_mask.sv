@@ -29,7 +29,8 @@ wire logic [31:0] timer_n;
 
 note_t note_player [0:2];
 
-wire logic [1:0] song_select_del;
+wire game_if game_engine_del;
+wire logic [1:0] song_select_player;
 
 wire logic [15:0] current_score;
 wire logic [3:0]  current_multiplier;
@@ -40,6 +41,36 @@ wire logic [5:0] buttons_del;
 wire logic enable_out;
 
 delay #(
+    .CLK_DEL(5),
+    .WIDTH(8)
+) u_delay_game (
+    .clk,
+    .rst_n,
+    .din(game_engine),
+    .dout(game_engine_del)
+);
+
+// delay #(
+//     .CLK_DEL(4),
+//     .WIDTH(2)
+// ) u_delay_select (
+//     .clk,
+//     .rst_n,
+//     .din(song_select),
+//     .dout(song_select_del)
+// );
+
+delay #(
+    .CLK_DEL(5),
+    .WIDTH(2)
+) select_delay (
+    .clk,
+    .rst_n,
+    .din(song_select),
+    .dout(song_select_player)
+);
+
+delay #(
     .CLK_DEL(1),
     .WIDTH(38)
 )vga_delay(
@@ -47,16 +78,6 @@ delay #(
     .rst_n,
     .din(vga_in),
     .dout(vga_del)
-);
-
-delay #(
-    .CLK_DEL(1),
-    .WIDTH(2)
-)select_delay(
-    .clk,
-    .rst_n,
-    .din(song_select),
-    .dout(song_select_del)
 );
 
 timer #(
@@ -72,7 +93,7 @@ timer #(
 song_player u_song_player(
     .clk,
     .rst_n,
-    .song_select(song_select_del),
+    .song_select(song_select_player),
     .enable_in(enable_player),
     .enable_out(enable_note_fill),
     .final_note,
@@ -102,7 +123,7 @@ delay #(
 ) u_delay_status (
     .clk,
     .rst_n,
-    .din(game_engine.status),
+    .din(game_engine_del.status),
     .dout({status_del})
 );
 
@@ -134,7 +155,7 @@ delay #(
 ) u_delay_buttons (
     .clk,
     .rst_n,
-    .din(game_engine.buttons),
+    .din(game_engine_del.buttons),
     .dout(buttons_del)
 );
 
