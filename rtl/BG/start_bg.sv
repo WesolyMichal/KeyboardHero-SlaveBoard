@@ -15,15 +15,14 @@ module start_bg (
 import game_pkg::*;
 
 // --- PARAMETRY --- 
-localparam [11:0] BG_COLOR = 12'h3_3_5;
 localparam [11:0] GAME_NAME_COLOR = 12'hf_f_0;
 localparam [11:0] AUTHORS_COLOR = 12'hf_f_f;
 
 localparam LOGO_X = 0;
-localparam LOGO_Y = 640;
+localparam LOGO_Y = 704;
 localparam LOGO_LENGTH = 48; 
 localparam LOGO_WIDTH  = 64; 
-localparam LOGO_SCALE = 2; 
+localparam LOGO_SCALE = 1; 
 localparam LOGO_ADDR_SHIFT = $clog2(LOGO_SCALE);
 
 localparam ENTER_X = 384;
@@ -43,15 +42,17 @@ localparam GAME_NAME_SCALE = 8;
 localparam GAME_NAME_ADDR_SHIFT = $clog2(GAME_NAME_SCALE);
 localparam logic [0:GAME_NAME_LENGTH-1] [7:0] GAME_NAME = "Keyboard-Hero";
 
-localparam AUTHORS_X = 190; 
+localparam AUTHORS_X = 308; 
 localparam AUTHORS_Y = 720;
 localparam AUTHORS_LENGTH = 51;
-localparam AUTHORS_SCALE = 2;
+localparam AUTHORS_SCALE = 1;
 localparam AUTHORS_ADDR_SHIFT = $clog2(AUTHORS_SCALE);
 localparam logic [0:AUTHORS_LENGTH-1] [7:0] Authors = "GAME DEVELOPED BY MICHAL WESOLOWSKI AND JAKUB SUDER";
 
-
-
+// localparam STICKER_X = 100;
+// localparam STICKER_Y = 100;
+// localparam STICKER_LENGTH = 300;
+// localparam STICKER_WIDTH = 335;
 
 // --- SYGNAŁY WEWNĘTRZNE ---
 logic [11:0] rgb_nxt;
@@ -65,65 +66,91 @@ logic [7:0] hoff_button;
 logic [6:0] voff_authors;
 logic [8:0] hoff_authors;
 
-// Rejestry potoku (Pipeline) do synchronizacji z opóźnieniem pamięci ROM (2 cykle opóźnienia)
-logic d1_vblnk, d2_vblnk;
-logic d1_hblnk, d2_hblnk;
-logic in_logo, d1_in_logo, d2_in_logo;
-logic in_button, d1_in_button, d2_in_button;
-logic in_game_name, d1_in_game_name, d2_in_game_name;
-logic in_authors, d1_in_authors, d2_in_authors;
-logic [2:0] d1_px_h_in_char, d2_px_h_in_char;
-logic d1_enter, d2_enter;
+// Flagi kombinacyjne
+logic in_logo, in_button, in_game_name, in_authors, in_sticker;
+
+// Rejestry opóźniające
+logic [1:0] vblnk_reg, hblnk_reg;
+logic [1:0] in_logo_reg, in_button_reg, in_game_name_reg, in_authors_reg, in_sticker_reg, enter_reg;
+logic [5:0] px_h_in_char_reg;
 
 logic [1:0] enable_reg;
 
-// Adresy dla pamięci ROM
+// Sygnały dla pamięci ROM
 logic [11:0] logo_addr_nxt, logo_addr;
 logic [12:0] enter_addr_nxt, enter_addr;
 logic [10:0] font_addr_nxt, font_addr;
+logic [17:0] brickwall_addr_nxt, brickwall_addr;
+// logic [17:0] sticker_addr_nxt, sticker_addr;
+logic [10:0] brickwall_x, brickwall_y;
+
+function automatic logic [10:0] wrap_coordinate(
+    input logic [10:0] coordinate,
+    input logic [10:0] dimension
+);
+    wrap_coordinate = (coordinate >= dimension) ? coordinate - dimension : coordinate;
+endfunction
 
 // Wyjścia z pamięci ROM
 logic [11:0] logo_rgb;
 logic        enter_bit;
 logic [7:0]  font_pixels;
+logic [11:0] brickwall_pixels;
+//logic [11:0] sticker_pixels;
 
 // --- INSTANCJE ROM ---
 agh_image_rom u_agh_image_rom (
     .clk,
-    // .rst_n, 
     .address(logo_addr),
     .rgb(logo_rgb)
 );
 
 enter_button_rom u_enter_button_rom  (
      .clk,
-    //  .rst_n,
      .rom_addr(enter_addr),
      .enter_pixel_bit(enter_bit)
  );
 
  font_rom u_font_rom (
     .clk,
-    // .rst_n,
     .addr(font_addr),
     .char_line_pixels(font_pixels)
  );
 
+ brickwall u_brickwall_rom (
+    .clk,
+    .addr(brickwall_addr),
+    .brickwall_px(brickwall_pixels)
+ );
 
-// --- CYKL 0: Logika kombinacyjna wyliczania adresów i flag ---
+//  sticker_rom u_sticker_rom (
+//     .clk,
+//     .addr(sticker_addr),
+//     .sticker_px(sticker_pixels)
+//  );
+
+
+// --- Logika kombinacyjna wyliczania adresów i flag ---
 always_comb begin
-    logo_addr_nxt  = '0;
-    enter_addr_nxt = '0;
-    font_addr_nxt  = '0;
-    
     in_logo   = 1'b0;
     in_button = 1'b0;
     in_game_name = 1'b0;
     in_authors = 1'b0;
-    
+    in_sticker = 1'b0;
+    logo_addr_nxt  = '0;
+    enter_addr_nxt = '0;
+    font_addr_nxt  = '0;
+    brickwall_addr_nxt = '0;
+//   sticker_addr_nxt = '0;
     char_code    = '0;
     px_h_in_char = '0;
 
+    brickwall_x = wrap_coordinate(vga_in.hcount, 11'd600);
+    brickwall_y = wrap_coordinate(vga_in.vcount, 11'd274);
+    brickwall_y = wrap_coordinate(brickwall_y, 11'd274);
+    brickwall_addr_nxt = (brickwall_y * 17'd600) + brickwall_x;
+
+    
     // Logika ENTER
     if ((vga_in.hcount >= ENTER_X && vga_in.vcount >= ENTER_Y) && 
         (vga_in.hcount < ENTER_X + (ENTER_LENGTH * ENTER_SCALE) && vga_in.vcount < ENTER_Y + (ENTER_WIDTH * ENTER_SCALE))) begin
@@ -152,7 +179,7 @@ always_comb begin
             font_addr_nxt = { char_code[6:0], 4'(voff_game_name[3:0]) };
             px_h_in_char = hoff_game_name[2:0];
     end
-
+    // Logika AUTHORS
     if ((vga_in.hcount >= AUTHORS_X && vga_in.hcount < AUTHORS_X + AUTHORS_LENGTH * BASE_CHAR_WIDTH * AUTHORS_SCALE) &&
         (vga_in.vcount >= AUTHORS_Y && vga_in.vcount < AUTHORS_Y + BASE_CHAR_HEIGHT * AUTHORS_SCALE)) begin
             in_authors = 1'b1;
@@ -163,81 +190,77 @@ always_comb begin
             font_addr_nxt = {char_code[6:0], 4'(voff_authors[3:0])};
             px_h_in_char  = hoff_authors[2:0];
     end
+    // Logika STICKER
+    // if ((vga_in.hcount >= STICKER_X && vga_in.hcount < STICKER_X + STICKER_LENGTH) &&
+    //     (vga_in.vcount >= STICKER_Y && vga_in.vcount < STICKER_Y + STICKER_WIDTH )) begin
+    //         in_sticker = 1'b1;
+    //         sticker_addr_nxt = ((vga_in.vcount - STICKER_Y) * 18'd300) + (vga_in.hcount - STICKER_X);
+    // end
 end
 
 
-// --- CYKL 1: Rejestracja adresów ROM oraz pierwszy stopień opóźnień ---
+// --- Rejestracja danych ---
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         logo_addr       <= '0;
         enter_addr      <= '0;
         font_addr       <= '0;
+        brickwall_addr  <= '0;
+        // sticker_addr     <= '0;
+
+        enable_reg       <= 2'b0;
+
+        vblnk_reg        <= 2'b0;
+        hblnk_reg        <= 2'b0;
+        in_logo_reg       <= 2'b0;
+        in_button_reg     <= 2'b0;
+        in_game_name_reg  <= 2'b0;
+        in_authors_reg    <= 2'b0;
+        // in_sticker_reg    <= 2'b0;
+
+        px_h_in_char_reg <= 6'b0;
+        enter_reg         <= 2'b0;
         
-        d1_vblnk        <= 1'b0;
-        d1_hblnk        <= 1'b0;
-        d1_in_logo      <= 1'b0;
-        d1_in_button    <= 1'b0;
-        d1_in_game_name <= 1'b0;
-        d1_in_authors   <= 1'b0;
-        d1_px_h_in_char <= '0;
-        d1_enter        <= 1'b0;
     end else begin
         logo_addr       <= logo_addr_nxt;
         enter_addr      <= enter_addr_nxt;
         font_addr       <= font_addr_nxt;
+        brickwall_addr  <= brickwall_addr_nxt;
+        // sticker_addr    <= sticker_addr_nxt;
+
+        enable_reg       <= {enable_reg[0], enable_start_in};
         
-        d1_vblnk        <= vga_in.vblnk;
-        d1_hblnk        <= vga_in.hblnk;
-        d1_in_logo      <= in_logo;
-        d1_in_button    <= in_button;
-        d1_in_game_name <= in_game_name;
-        d1_in_authors   <= in_authors;
-        d1_px_h_in_char <= px_h_in_char;
-        d1_enter        <= enter;
+        vblnk_reg        <= {vblnk_reg[0], vga_in.vblnk};
+        hblnk_reg        <= {hblnk_reg[0], vga_in.hblnk};
+        in_logo_reg       <= {in_logo_reg[0], in_logo};
+        in_button_reg     <= {in_button_reg[0], in_button};
+        in_game_name_reg  <= {in_game_name_reg[0], in_game_name};
+        in_authors_reg    <= {in_authors_reg[0], in_authors};
+        // in_sticker_reg    <= {in_sticker_reg[0], in_sticker};
+
+        px_h_in_char_reg <= {px_h_in_char_reg[2:0], px_h_in_char};
+        enter_reg         <= {enter_reg[0], enter};
     end
 end
 
-
-// --- CYKL 2: Drugi stopień opóźnień ---
-always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        d2_vblnk        <= 1'b0;
-        d2_hblnk        <= 1'b0;
-        d2_in_logo      <= 1'b0;
-        d2_in_button    <= 1'b0;
-        d2_in_game_name <= 1'b0;
-        d2_in_authors   <= 1'b0;
-        d2_px_h_in_char <= '0;
-        d2_enter        <= 1'b0;
-    end else begin
-        d2_vblnk        <= d1_vblnk;
-        d2_hblnk        <= d1_hblnk;
-        d2_in_logo      <= d1_in_logo;
-        d2_in_button    <= d1_in_button;
-        d2_in_game_name <= d1_in_game_name;
-        d2_in_authors   <= d1_in_authors;
-        d2_px_h_in_char <= d1_px_h_in_char;
-        d2_enter        <= d1_enter;
-    end
-end
-
-
-// --- Łączenie kolorów (Cykl 2) ---
+// --- Łączenie kolorów ---
 always_comb begin
-    if (d2_hblnk || d2_vblnk || !enable_reg[1]) begin 
+    if (hblnk_reg[1] || vblnk_reg[1] || !enable_reg[1]) begin 
         rgb_nxt = 12'h000;
-    end else if (d2_in_logo) begin 
+    end else if (in_logo_reg[1]) begin 
         rgb_nxt = logo_rgb;
-    end else if (d2_in_button) begin 
+    end else if (in_button_reg[1]) begin 
         rgb_nxt = enter_bit ? 12'hf_f_f : 12'h0_0_0;
-        if (d2_enter)
+        if (enter_reg[1])
             rgb_nxt = ~rgb_nxt;
-    end else if (d2_in_game_name && font_pixels[~d2_px_h_in_char]) begin 
+    end else if (in_game_name_reg[1] && font_pixels[~px_h_in_char_reg[5:3]]) begin 
         rgb_nxt = GAME_NAME_COLOR;
-    end else if (d2_in_authors && font_pixels[~d2_px_h_in_char]) begin 
+    end else if (in_authors_reg[1] && font_pixels[~px_h_in_char_reg[5:3]]) begin 
         rgb_nxt = AUTHORS_COLOR;
+    // end else if ((in_sticker_reg[1]) && (sticker_pixels != 12'h333) &&(sticker_pixels != 12'h233)) begin 
+    //         rgb_nxt = sticker_pixels; // Kolor piksela naklejki
     end else begin  
-        rgb_nxt = BG_COLOR;
+        rgb_nxt = brickwall_pixels;
     end
 end
 
@@ -246,11 +269,9 @@ end
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         rgb_out_start_bg <= '0;
-        enable_reg       <= '0;
-        enable_start_out <= 1'b0;
+                enable_start_out <= 1'b0;
     end else begin
         rgb_out_start_bg <= rgb_nxt;
-        enable_reg       <= {enable_reg[0], enable_start_in}; 
         enable_start_out <= enable_reg[1];
     end
 end

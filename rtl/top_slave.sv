@@ -28,7 +28,7 @@ module top_slave (
     wire logic enter, esc, song_choosing, song_confirm;
     wire logic enable_song_mask;
     wire game_if game_engine;
-    wire logic [2:0] song_select, master_song; 
+    wire logic [1:0] song_select, master_song; 
 
     wire enable_bgs enable_bgs_FSM;
 
@@ -50,12 +50,12 @@ module top_slave (
     assign g = vga_out.rgb[7:4];
     assign b = vga_out.rgb[3:0];
 
-    always_comb begin
-        led = '0;
-        led[12:0] = comm_led;
-        led[9:8] = screen_led;
-        led[15:13] = state_led;
-    end
+    // always_comb begin
+    //     led = '0;
+    //     led[12:0] = comm_led;
+    //     led[9:8] = screen_led;
+    //     led[15:13] = state_led;
+    // end
 
     /**
      * Submodules instances
@@ -69,8 +69,15 @@ module top_slave (
         .rx(UART_rx),
         .r_data,
         .rd_uart,
-        .rx_empty
+        .rx_empty,
+        .wr_uart(),
+        .w_data(),
+        .tx_full(),
+        .tx(),
+        .tx_empty_out()
     );
+
+    
 
     uart_reader u_uart_reader(
         .clk,
@@ -81,7 +88,8 @@ module top_slave (
         .data_ready(read_data),
         .out_data(MSG)
     );
-
+    assign led[15:8] = MSG;
+    
     comm_decoder u_comm_decoder(
         .clk,
         .rst_n,
@@ -97,6 +105,8 @@ module top_slave (
         .led(comm_led),
         .functional_buttons
     );
+
+    assign led[7:0] = game_engine;
 
     slave_FSM u_slave_FSM(
         .clk,

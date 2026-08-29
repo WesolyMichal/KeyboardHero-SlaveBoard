@@ -45,6 +45,8 @@ set sv_files {
     ../rtl/rom/mibombo_rom.sv
     ../rtl/rom/song_rom.sv
     ../rtl/rom/star_rom.sv
+    ../rtl/rom/brickwall_rom.sv
+    ../rtl/rom/brickwall_4color_rom.sv
     ../rtl/song_mask/song_player/song_player.sv
     ../rtl/song_mask/song_player/song_player_ctl.sv
     ../rtl/song_mask/song_player/song_player_out.sv
@@ -95,6 +97,8 @@ set mem_files {
    ../rtl/data/mibombo_color.data
    ../rtl/data/mibombo.data
    ../rtl/data/star.data
+   ../rtl/data/brickwall.data
+   ../rtl/data/brickwall_4color_indexed.data
    ../rtl/songs/song_0.data
    ../rtl/songs/song_1.data
    ../rtl/songs/song_2.data

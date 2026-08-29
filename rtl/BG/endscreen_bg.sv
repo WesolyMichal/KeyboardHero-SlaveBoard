@@ -2,7 +2,7 @@ import vga_pkg::*;
 
 module endscreen_bg (
     input logic clk,
-    input logic rst_n,               // Reset synchroniczny, aktywny stanem niskim
+    input logic rst_n,
     input logic [15:0] end_score_in,
     input logic enable_endscreen_in,
 
@@ -12,19 +12,7 @@ module endscreen_bg (
     output logic enable_endscreen_out
 );
 
-// delay #(
-//     .CLK_DEL(3),
-//     .WIDTH(13)
-// ) test_delay(
-//     .clk,
-//     .rst_n,
-//     .din({vga_in.rgb, enable_endscreen_in}),
-//     .dout({rgb_out_endscreen_bg, enable_endscreen_out})
-// );
-
 // --- PARAMETRY --- 
-localparam [11:0] BG_COLOR = 12'h3_3_5;
-
 localparam TEXT_X = 160;
 localparam TEXT_Y = 200;
 localparam TEXT_LENGTH = 11; 
@@ -32,7 +20,6 @@ localparam TEXT_WIDTH  = TEXT_LENGTH * 8;
 localparam TEXT_HEIGHT = 16;
 localparam TEXT_SCALE = 8; 
 localparam TEXT_ADDR_SHIFT = $clog2(TEXT_SCALE);
-
 localparam logic [0:TEXT_LENGTH-1] [7:0] TEXT = "Your score:";
 
 localparam SCORE_X = 384;
@@ -69,31 +56,32 @@ logic [7:0] hoff_score;
 logic [3:0] digit_3, digit_2, digit_1, digit_0;
 logic [3:0] current_digit;
 
+// Flagi kombinacyjne
+logic in_text, in_star, in_score, star_is_earned;
+
+// Rejestry opóźniające
+logic [1:0] vblnk_reg, hblnk_reg;
+logic [1:0] in_text_reg, in_star_reg, star_is_earned_reg, in_score_reg;
+logic [5:0] px_h_in_char_reg;
 logic [1:0] enable_reg;
 
-// Flagi kombinacyjne (Cykl 0)
-logic in_text;
-logic in_star; 
-logic star_is_earned;
-logic in_score;
-
-// Rejestry potoku (Pipeline) dla zachowania opóźnienia 3 taktów
-logic d1_vblnk, d2_vblnk;
-logic d1_hblnk, d2_hblnk;
-logic d1_in_text, d2_in_text;
-logic d1_in_star, d2_in_star;
-logic d1_star_is_earned, d2_star_is_earned;
-logic d1_in_score, d2_in_score;
-logic [2:0] d1_px_h_in_char, d2_px_h_in_char;
-
-// Pamięci ROM
-logic [10:0] font_addr;
-(* use_dsp = "no" *) logic [10:0] font_addr_nxt;
+// Sygnały dla pamięci ROM
+logic [10:0] font_addr, font_addr_nxt;
 logic [7:0]  font_pixels;
 
-logic [12:0] star_addr;
-(* use_dsp = "no" *) logic [12:0] star_addr_nxt;
+logic [12:0] star_addr, star_addr_nxt;
 logic [1:0]  star_pixel;
+
+logic [10:0] brickwall_x, brickwall_y;
+logic [17:0] brickwall_addr_nxt, brickwall_addr;
+logic [11:0] brickwall_pixels;
+
+function automatic logic [10:0] wrap_coordinate(
+    input logic [10:0] coordinate,
+    input logic [10:0] dimension
+);
+    wrap_coordinate = (coordinate >= dimension) ? coordinate - dimension : coordinate;
+endfunction
 
 // --- INSTANCJE ROM ---
 font_rom u_font_rom (
@@ -108,8 +96,14 @@ star_rom u_star_rom (
    .star_pixel(star_pixel)   
 );
 
+brickwall u_brickwall_rom (
+    .clk,
+    .addr(brickwall_addr),
+    .brickwall_px(brickwall_pixels)
+ );
 
-// --- CYKL 0: Logika kombinacyjna wyliczania adresów i flag ---
+
+// --- Logika kombinacyjna wyliczania adresów i flag ---
 always_comb begin
     in_text         = 1'b0;
     in_star         = 1'b0; 
@@ -120,6 +114,13 @@ always_comb begin
     px_h_in_char    = '0;
     star_is_earned  = 1'b0;
     current_digit   = 4'd0;
+
+    brickwall_addr_nxt = '0;
+
+    brickwall_x = wrap_coordinate(vga_in.hcount, 11'd600);
+    brickwall_y = wrap_coordinate(vga_in.vcount, 11'd274);
+    brickwall_y = wrap_coordinate(brickwall_y, 11'd274);
+    brickwall_addr_nxt = (brickwall_y * 17'd600) + brickwall_x;
 
     // Logika TEXT
     if ((vga_in.hcount >= TEXT_X && vga_in.hcount < TEXT_X + (TEXT_WIDTH << TEXT_ADDR_SHIFT)) && 
@@ -142,10 +143,10 @@ always_comb begin
         voff_score = (vga_in.vcount - SCORE_Y) >> TEXT_ADDR_SHIFT;
 
         case (hoff_score / 8)
-            0: current_digit = digit_3;
-            1: current_digit = digit_2;
-            2: current_digit = digit_1;
-            3: current_digit = digit_0;
+            8'd0: current_digit = digit_3;
+            8'd1: current_digit = digit_2;
+            8'd2: current_digit = digit_1;
+            8'd3: current_digit = digit_0;
             default: current_digit = 4'd0;
         endcase
 
@@ -165,10 +166,8 @@ always_comb begin
 
         if (px_in_star < STAR_LENGTH) begin
             in_star       = 1'b1;
-            // Zeby nie dodawalo do DSP, STAR_LENGTH = 50 = 110010 (2)
-            star_addr_nxt = voff_star << 1 + voff_star << 4 + voff_star << 5; 
+            star_addr_nxt = (voff_star << 1) + (voff_star << 4) + (voff_star << 5);
             star_addr_nxt += px_in_star; 
-
 
             if (star_idx == 0 && end_score >= 200) star_is_earned = 1'b1;
             if (star_idx == 1 && end_score >= 400) star_is_earned = 1'b1;
@@ -178,103 +177,82 @@ always_comb begin
 end
 
 
-// --- CYKL 1: Zatrzymywanie potoku i rejestracja danych ---
+// --- Rejestracja danych ---
 always_ff @(posedge clk or negedge rst_n) begin
-    // Adresy dla BRAM są poza warunkiem if(!rst_n). 
-    // Odcina to asynchroniczny reset z modułu u_timing i eliminuje błąd Vivado.
     if (!rst_n) begin
+        font_addr         <= '0;
+        star_addr         <= '0;
+        brickwall_addr    <= '0;
+
         end_score         <= '0;
         digit_3           <= '0;
         digit_2           <= '0;
         digit_1           <= '0;
         digit_0           <= '0;
 
-        d1_vblnk          <= 1'b0;
-        d1_hblnk          <= 1'b0;
-        d1_in_text        <= 1'b0;
-        d1_in_star        <= 1'b0; 
-        d1_px_h_in_char   <= '0;
-        d1_star_is_earned <= 1'b0;
-        d1_in_score       <= 1'b0;
-        font_addr         <= '0;
-        star_addr         <= '0;
+        enable_reg        <= '0;
+        
+        vblnk_reg           <= 2'b0;
+        hblnk_reg           <= 2'b0;
+        in_text_reg         <= 2'b0;
+        in_star_reg         <= 2'b0; 
+        in_score_reg        <= 2'b0;
+        px_h_in_char_reg    <= '0;
+        star_is_earned_reg  <= 2'b0;  
     end else begin
+        font_addr         <= font_addr_nxt;
+        star_addr         <= star_addr_nxt;
+        brickwall_addr    <= brickwall_addr_nxt;
+        
         end_score         <= end_score_in; 
         digit_3           <= (end_score_in / 1000) % 10; 
         digit_2           <= (end_score_in / 100) % 10;  
         digit_1           <= (end_score_in / 10) % 10;   
         digit_0           <= end_score_in % 10;          
 
-        d1_vblnk          <= vga_in.vblnk;
-        d1_hblnk          <= vga_in.hblnk;
-        d1_in_text        <= in_text;
-        d1_in_star        <= in_star; 
-        d1_px_h_in_char   <= px_h_in_char;
-        d1_star_is_earned <= star_is_earned;
-        d1_in_score       <= in_score;
-
-        font_addr         <= font_addr_nxt;
-        star_addr         <= star_addr_nxt;
+        enable_reg        <= {enable_reg[0], enable_endscreen_in};
+        vblnk_reg           <= {vblnk_reg[0], vga_in.vblnk};
+        hblnk_reg           <= {hblnk_reg[0], vga_in.hblnk};
+        in_text_reg         <= {in_text_reg[0], in_text};
+        in_star_reg         <= {in_star_reg[0], in_star}; 
+        in_score_reg        <= {in_score_reg[0], in_score};
+        px_h_in_char_reg    <= {px_h_in_char_reg[2:0], px_h_in_char};
+        star_is_earned_reg  <= {star_is_earned_reg[0], star_is_earned}; 
     end
 end
 
-
-// --- CYKL 2: Drugi stopień opóźnień ---
-always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        d2_vblnk          <= 1'b0;
-        d2_hblnk          <= 1'b0;
-        d2_in_text        <= 1'b0;
-        d2_in_star        <= 1'b0; 
-        d2_px_h_in_char   <= '0;
-        d2_star_is_earned <= 1'b0;
-        d2_in_score       <= 1'b0;
-    end else begin
-        d2_vblnk          <= d1_vblnk;
-        d2_hblnk          <= d1_hblnk;
-        d2_in_text        <= d1_in_text;
-        d2_in_star        <= d1_in_star; 
-        d2_px_h_in_char   <= d1_px_h_in_char;
-        d2_star_is_earned <= d1_star_is_earned;
-        d2_in_score       <= d1_in_score;
-    end
-end
-
-
-// --- ŁĄCZENIE KOLORÓW (Cykl 2) ---
+// --- Łączenie kolorów ---
 always_comb begin
-    if (d2_hblnk || d2_vblnk || !enable_reg[1]) begin 
+    if (hblnk_reg[1] || vblnk_reg[1] || !enable_reg[1]) begin 
         rgb_nxt = 12'h000;
         
-    end else if ((d2_in_text || d2_in_score) && font_pixels[~d2_px_h_in_char]) begin
+    end else if ((in_text_reg[1] || in_score_reg[1]) && font_pixels[~px_h_in_char_reg[5:3]]) begin
         rgb_nxt = 12'hf_f_0;
 
-    end else if (d2_in_star) begin
+    end else if (in_star_reg[1]) begin
         case (star_pixel)
-            2'b00: rgb_nxt = BG_COLOR;
+            2'b00: rgb_nxt = brickwall_pixels;
             2'b01: rgb_nxt = 12'hf_f_f; 
             2'b10: begin
-                if (d2_star_is_earned)
+                if (star_is_earned_reg[1])
                     rgb_nxt = 12'hf_f_0; 
                 else 
                     rgb_nxt = 12'h3_3_3; 
             end
-            default: rgb_nxt = BG_COLOR;
+            default: rgb_nxt = brickwall_pixels;
         endcase     
     end else begin  
-        rgb_nxt = BG_COLOR;
+        rgb_nxt = brickwall_pixels;
     end
 end
 
 
-// --- CYKL 3: Wyjściowy rejestr ---
+// --- Wyjściowy rejestr ---
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         rgb_out_endscreen_bg <= '0;
-        enable_reg           <= '0;
         enable_endscreen_out <= 1'b0;
     end else begin
-        enable_reg           <= {enable_reg[0], enable_endscreen_in}; 
         enable_endscreen_out <= enable_reg[1];
         rgb_out_endscreen_bg <= rgb_nxt;
     end

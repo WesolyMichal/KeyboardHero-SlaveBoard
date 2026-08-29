@@ -14,9 +14,8 @@ module score_mask (
     input logic [15:0] current_score,
     input logic [3:0]  current_multiplier
 );
-
 // --- PARAMETRY --- 
-localparam [11:0] TEXT_COLOR = 12'h3_3_5;
+localparam [11:0] TEXT_COLOR = 12'hfff;
 localparam TEXT_SCALE = 2; 
 localparam TEXT_ADDR_SHIFT = $clog2(TEXT_SCALE);
 
@@ -106,7 +105,7 @@ always_comb begin
         in_score = 1'b1;
         hoff_text = (vga_in.hcount - SCORE_X) >> TEXT_ADDR_SHIFT;
         voff_text = (vga_in.vcount - SCORE_Y) >> TEXT_ADDR_SHIFT;
-        char_idx = hoff_text / 8; 
+        char_idx = hoff_text >> 3; 
 
         if (char_idx < 7) char_code = STR_SCORE[char_idx];
         else if (char_idx == 7) char_code = 8'h30 + s_4;
@@ -125,7 +124,7 @@ always_comb begin
         in_multi = 1'b1;
         hoff_text = (vga_in.hcount - MULTI_X) >> TEXT_ADDR_SHIFT;
         voff_text = (vga_in.vcount - MULTI_Y) >> TEXT_ADDR_SHIFT;
-        char_idx = hoff_text / 8;
+        char_idx = hoff_text >> 3;
 
         if (char_idx < 8) char_code = STR_MULTI[char_idx];
         else if (char_idx == 8) char_code = 8'h30 + m_1;

@@ -13,9 +13,9 @@ module button_mask(
     output vga_if vga_out
 );
 
-localparam BUTTON_WIDTH = 60;//61
-localparam BUTTON_Y = NOTE_DISPLAY_HEIGHT + 2;//642
-localparam BUTTON_OFFSET = 2;//2
+localparam BUTTON_WIDTH = 60;
+localparam BUTTON_Y = NOTE_DISPLAY_HEIGHT + 2;
+localparam BUTTON_OFFSET = 2;
 
 logic [11:0] rgb_nxt;
 logic [10:0] button_x;

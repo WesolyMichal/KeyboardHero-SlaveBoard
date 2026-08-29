@@ -4,5 +4,6 @@ sv work ../../rtl/vga_pkg.sv \
         ../../rtl/delay.sv \
         ../../rtl/rom/font_rom.sv \
         ../../rtl/rom/star_rom.sv \
+        ../../rtl/rom/brickwall_rom.sv \
         ../common/tiff_writer.sv \
         endscreen_bg_tb.sv

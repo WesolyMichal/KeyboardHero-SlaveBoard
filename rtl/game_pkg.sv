@@ -23,7 +23,7 @@ package game_pkg;
     } game_if;
 
     //HIT MARGINS
-    localparam HIT_MARGIN = 50;
+    localparam HIT_MARGIN = 100;
 
     //for simulation !!!
     //localparam HIT_MARGIN = 5;

@@ -6,5 +6,7 @@ sv work ../../rtl/vga_pkg.sv \
         ../../rtl/rom/enter_button_rom.sv \
         ../../rtl/rom/agh_image_rom.sv \
         ../../rtl/rom/font_rom.sv \
+        ../../rtl/rom/brickwall_rom.sv \
+        ../../rtl/rom/sticker_rom.sv \
         ../common/tiff_writer.sv \
         start_bg_tb.sv

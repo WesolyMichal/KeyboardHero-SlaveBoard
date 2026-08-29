@@ -87,7 +87,8 @@ timer #(
     .rst_n,
     .enable(enable_in),
     .tick,
-    .enable_out(enable_player)
+    .enable_out(enable_player),
+    .count()
 );
 
 song_player u_song_player(
@@ -98,7 +99,7 @@ song_player u_song_player(
     .enable_out(enable_note_fill),
     .final_note,
     .note_out(note_player),
-    .tick,
+    .tick(tick),
     .timer(timer_n),
     .vga_in(vga_del),
     .vga_out(vga_player)

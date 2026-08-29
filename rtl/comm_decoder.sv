@@ -18,12 +18,12 @@ module comm_decoder(
 
     output logic [12:0] led,
 
-    output logic [2:0] song_select,
+    output logic [1:0] song_select,
     input logic [3:0] functional_buttons
 );
 
 logic enter_nxt, esc_nxt, song_choosing_nxt, song_confirm_nxt;
-logic [2:0] song_select_nxt;
+logic [1:0] song_select_nxt;
 game_if game_engine_nxt;
 
 logic [3:0] functional_buttons_prev;
@@ -63,11 +63,11 @@ always_comb begin
             HALT: esc_nxt = 1'b1;
             ENTER: enter_nxt = 1'b1;
             {4'b00xx, CHOOSE}: begin
-                song_select_nxt = r_data[6:4];
+                song_select_nxt = r_data[5:4];
                 song_choosing_nxt = 1'b1;
             end
             {4'b00xx, CONFIRM}: begin
-                song_select_nxt = r_data[6:4];
+                song_select_nxt = r_data[5:4];
                 song_confirm_nxt = 1'b1;
             end
         endcase
@@ -75,8 +75,8 @@ always_comb begin
     
      if (functional_buttons_rise[2]) begin
         song_choosing_nxt = 1'b1;
-        if (song_select == 3'd4)
-            song_select_nxt = 3'd0;
+        if (song_select == 2'd3)
+            song_select_nxt = 2'd0;
          else
             song_select_nxt = song_select + 3'd1;
     end else if (functional_buttons_rise[3]) begin
@@ -119,8 +119,8 @@ always_comb begin
         functional_buttons & ~functional_buttons_prev;
 end
 
-assign led[7:0] = game_engine;
-assign led[10] = song_confirm;
-assign led[12:11] = song_select[1:0];
+//assign led[7:0] = game_engine;
+// assign led[10] = song_confirm;
+// assign led[12:11] = song_select[1:0];
 
 endmodule

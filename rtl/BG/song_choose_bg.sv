@@ -2,7 +2,7 @@ import vga_pkg::*;
 
 module song_choose_bg (
     input logic clk,
-    input logic rst_n,               // Reset synchroniczny, aktywny stanem niskim
+    input logic rst_n,
     input logic enable_choose_in,
     input [2:0] master_song,
 
@@ -15,7 +15,6 @@ module song_choose_bg (
 import game_pkg::*;
 
 // --- PARAMETRY KOLORÓW --- 
-localparam [11:0] BG_COLOR     = 12'h2_2_3;
 localparam [11:0] TEXT_COLOR   = 12'hf_f_f;
 localparam [11:0] INSTR_TEXT_COLOR = 12'h0_f_f;
 localparam [11:0] CURSOR_COLOR = 12'hf_f_0; 
@@ -34,7 +33,7 @@ localparam INSTR_START_Y = 420; //;)
 localparam INSTR_ROW_STEP_PIXELS = 48;
 localparam INSTR_ROW_INDEX_WIDTH = $clog2(VER_PIXELS / INSTR_ROW_STEP_PIXELS + 1);
 localparam logic [0:55] [7:0] INSTR_0 = "               HOW TO PLAY KEYBOARD HERO?               ";
-localparam logic [0:55] [7:0] INSTR_1 = " To play, press STRUM < or > together with buttons 1-6. ";
+localparam logic [0:55] [7:0] INSTR_1 = "   To play, press SPACEBAR together with buttons 1-6.   ";
 localparam logic [0:55] [7:0] INSTR_2 = "       Buttons 1-6 match the colors of the notes.       ";
 localparam logic [0:55] [7:0] INSTR_3 = " Hold the matching button for long notes until they end.";
 localparam logic [0:55] [7:0] INSTR_4 = "  Use STRUM < or > at the same time as the note button. ";
@@ -62,20 +61,12 @@ localparam logic [0:45] [7:0] Heading = "CHOOSE YOUR SONG FROM THE LIST BELOW US
 
 // --- SYGNAŁY WEWNĘTRZNE ---
 logic [11:0] rgb_nxt;
-logic [1:0] enable_reg;
+
 logic [2:0] selected_song;
 
 logic [15:0] hoff_text, voff_text;
 logic [7:0]  char_code;
 logic [2:0]  px_h_in_char;
-
-// Rejestry pipeline do synchronizacji z opóźnieniem pamięci ROM 
-logic d1_vblnk, d2_vblnk;
-logic d1_hblnk, d2_hblnk;
-logic in_text, d1_in_text, d2_in_text;
-logic in_instruction, d1_in_instruction, d2_in_instruction;
-logic in_cursor, d1_in_cursor, d2_in_cursor;
-logic [2:0] d1_px_h_in_char, d2_px_h_in_char;
 
 logic [10:0] rel_y;
 logic [ROW_INDEX_WIDTH-1:0] current_row;
@@ -83,34 +74,67 @@ logic [7:0]  y_in_row;
 logic [INSTR_ROW_INDEX_WIDTH-1:0] instruction_row;
 logic [6:0]  y_in_instruction;
 
+//Flagi kombinacyjne
+logic in_text, in_instruction, in_cursor;
+
+// Rejestry opóźniające
+logic [1:0] vblnk_reg, hblnk_reg;
+logic [1:0] in_text_reg, in_instruction_reg, in_cursor_reg;
+logic [5:0] px_h_in_char_reg;
+logic [1:0] enable_reg;
+
+// Sygnały dla pamięci ROM
 logic [10:0] font_addr, font_addr_nxt;
 logic [7:0]  font_pixels;
+
+logic [10:0] brickwall_x, brickwall_y;
+logic [17:0] brickwall_addr_nxt, brickwall_addr;
+logic [11:0] brickwall_pixels;
+
+function automatic logic [10:0] wrap_coordinate(
+    input logic [10:0] coordinate,
+    input logic [10:0] dimension
+);
+    wrap_coordinate = (coordinate >= dimension) ? coordinate - dimension : coordinate;
+endfunction
 
 // --- INSTANCJA FONT ROM ---
 font_rom u_font_rom (
     .clk(clk),
-    // .rst_n(rst_n),
     .addr(font_addr),
     .char_line_pixels(font_pixels)
 );
 
-// --- CYKL 0: Logika kombinacyjna wyliczania adresów i flag ---
+brickwall u_brickwall_rom (
+    .clk,
+    .addr(brickwall_addr),
+    .brickwall_px(brickwall_pixels)
+ );
+
+// --- Logika kombinacyjna wyliczania adresów i flag ---
 always_comb begin
-    in_text       = 1'b0;
-    in_instruction = 1'b0;
-    in_cursor     = 1'b0;
+    in_text       = '0;
+    in_instruction = '0;
+    in_cursor     = '0;
     font_addr_nxt = '0;
     char_code     = '0;
     hoff_text     = '0;
     voff_text     = '0;
     px_h_in_char  = '0;
 
+    brickwall_addr_nxt = '0;
+
+    brickwall_x = wrap_coordinate(vga_in.hcount, 11'd600);
+    brickwall_y = wrap_coordinate(vga_in.vcount, 11'd274);
+    brickwall_y = wrap_coordinate(brickwall_y, 11'd274);
+    brickwall_addr_nxt = (brickwall_y * 17'd600) + brickwall_x;
+    
     rel_y       = vga_in.vcount - SONG_NAME_START_Y;
     current_row = rel_y >> ROW_STEP_SHIFT;
     y_in_row    = rel_y & (ROW_STEP_PIXELS - 1);
     instruction_row = '0;
     y_in_instruction = '0;
-
+    // Logika NAGŁÓWKA
     if (vga_in.vcount >= HEADING_NAME_START_Y  && vga_in.vcount < HEADING_NAME_START_Y + CHAR_HEIGHT &&
         vga_in.hcount >= HEADING_NAME_START_X && vga_in.hcount < HEADING_NAME_START_X + 36 * CHAR_WIDTH) begin
             in_text   = 1'b1;
@@ -184,12 +208,12 @@ always_comb begin
         voff_text = y_in_instruction >> TEXT_ADDR_SHIFT;
 
         case (instruction_row)
-            0: char_code = INSTR_0[hoff_text >> 3];
-            1: char_code = INSTR_1[hoff_text >> 3];
-            2: char_code = INSTR_2[hoff_text >> 3];
-            3: char_code = INSTR_3[hoff_text >> 3];
-            4: char_code = INSTR_4[hoff_text >> 3];
-            5: char_code = INSTR_5[hoff_text >> 3];
+            5'd0: char_code = INSTR_0[hoff_text >> 3];
+            5'd1: char_code = INSTR_1[hoff_text >> 3];
+            5'd2: char_code = INSTR_2[hoff_text >> 3];
+            5'd3: char_code = INSTR_3[hoff_text >> 3];
+            5'd4: char_code = INSTR_4[hoff_text >> 3];
+            5'd5: char_code = INSTR_5[hoff_text >> 3];
             default: char_code = 8'h20;
         endcase
 
@@ -199,75 +223,62 @@ always_comb begin
     end
 end
 
-// --- CYKL 1: Rejestracja adresu ROM oraz pierwszy stopień opóźnień ---
+// --- Rejestracja danych ---
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        selected_song   <= '0;
         font_addr       <= '0;
+        brickwall_addr  <= '0;
+
+        selected_song   <= '0;
         
-        d1_vblnk        <= 1'b0;
-        d1_hblnk        <= 1'b0;
-        d1_in_text      <= 1'b0;
-        d1_in_instruction <= 1'b0;
-        d1_in_cursor    <= 1'b0;
-        d1_px_h_in_char <= '0;
+        enable_reg          <= '0;
+
+        vblnk_reg           <= '0;
+        hblnk_reg           <= '0;
+        in_text_reg         <= '0;
+        in_instruction_reg  <= '0;
+        in_cursor_reg       <= '0;
+        px_h_in_char_reg    <= '0;
     end else begin
-        selected_song   <= master_song; // Zatrzaskiwanie wejścia wyboru piosenki
         font_addr       <= font_addr_nxt;
+        brickwall_addr  <= brickwall_addr_nxt;
+
+        selected_song   <= master_song;
         
-        d1_vblnk        <= vga_in.vblnk;
-        d1_hblnk        <= vga_in.hblnk;
-        d1_in_text      <= in_text;
-        d1_in_instruction <= in_instruction;
-        d1_in_cursor    <= in_cursor;
-        d1_px_h_in_char <= px_h_in_char;
+        enable_reg          <= {enable_reg[0], enable_choose_in}; 
+        
+        vblnk_reg           <= {vblnk_reg[0], vga_in.vblnk};
+        hblnk_reg           <= {hblnk_reg[0], vga_in.hblnk};
+        in_text_reg         <= {in_text_reg[0], in_text};
+        in_instruction_reg  <= {in_instruction_reg[0], in_instruction};
+        in_cursor_reg       <= {in_cursor_reg[0], in_cursor};
+        px_h_in_char_reg    <= {px_h_in_char_reg[2:0], px_h_in_char};
     end
 end
 
-// --- CYKL 2: Drugi stopień opóźnień (Wyrównanie z wyjściem danych z FONT ROM) ---
-always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        d2_vblnk        <= 1'b0;
-        d2_hblnk        <= 1'b0;
-        d2_in_text      <= 1'b0;
-        d2_in_instruction <= 1'b0;
-        d2_in_cursor    <= 1'b0;
-        d2_px_h_in_char <= '0;
-    end else begin
-        d2_vblnk        <= d1_vblnk;
-        d2_hblnk        <= d1_hblnk;
-        d2_in_text      <= d1_in_text;
-        d2_in_instruction <= d1_in_instruction;
-        d2_in_cursor    <= d1_in_cursor;
-        d2_px_h_in_char <= d1_px_h_in_char;
-    end
-end
-
-// --- ŁĄCZENIE KOLORÓW (Logika kombinacyjna w Cyklu 2) ---
+// --- łączenie kolorów ---
 always_comb begin
-    if (d2_hblnk || d2_vblnk || !enable_reg[1]) begin
+    if (hblnk_reg[1] || vblnk_reg[1] || !enable_reg[1]) begin
         rgb_nxt = 12'h0_0_0;
-    end else if ((d2_in_text || d2_in_cursor) && font_pixels[~d2_px_h_in_char]) begin 
-        if (d2_in_cursor) begin
+    end else if ((in_text_reg[1] || in_cursor_reg[1]) && font_pixels[~px_h_in_char_reg[5:3]]) begin 
+        if (in_cursor_reg[1]) begin
             rgb_nxt = CURSOR_COLOR;
-        end else if (d2_in_instruction) begin
+        end else if (in_instruction_reg[1]) begin
             rgb_nxt = INSTR_TEXT_COLOR;
         end else begin
             rgb_nxt = TEXT_COLOR;
         end
     end else begin 
-        rgb_nxt = BG_COLOR;
+        rgb_nxt = brickwall_pixels;
     end
 end
 
-// --- CYKL 3: Wyściowy rejestr (Ostateczne wystawienie stabilnego RGB) ---
+// --- Wyściowy rejestr ---
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         rgb_out_choose_bg  <= '0;
-        enable_reg         <= '0;
         enable_choose_out  <= '0;
     end else begin
-        enable_reg         <= {enable_reg[0], enable_choose_in}; 
         enable_choose_out  <= enable_reg[1];
         rgb_out_choose_bg  <= rgb_nxt;
     end
