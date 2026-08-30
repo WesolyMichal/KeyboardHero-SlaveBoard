@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 2026  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Jakub Suder
+ *
+ * Description:
+ * This is module responsible for multiplexing vga signals created 
+ * from all backgrounds creating shared output.
+ */
+
 import vga_pkg::*;
 
 module mux_bg (

@@ -1,9 +1,19 @@
+/*
+ * Copyright (C) 2026  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Jakub Suder
+ *
+ * Description:
+ * This is module responsible for creating backgroud for ENDSCREEN state of slave_FSM.
+ */
+
 import vga_pkg::*;
+import bg_pkg::*;
 
 module endscreen_bg (
     input logic clk,
     input logic rst_n,
-    input logic [15:0] end_score_in,
+    input logic [31:0] end_score_in,
     input logic enable_endscreen_in,
 
     input vga_if vga_in,
@@ -12,34 +22,9 @@ module endscreen_bg (
     output logic enable_endscreen_out
 );
 
-// --- PARAMETRY --- 
-localparam TEXT_X = 160;
-localparam TEXT_Y = 200;
-localparam TEXT_LENGTH = 11; 
-localparam TEXT_WIDTH  = TEXT_LENGTH * 8;
-localparam TEXT_HEIGHT = 16;
-localparam TEXT_SCALE = 8; 
-localparam TEXT_ADDR_SHIFT = $clog2(TEXT_SCALE);
-localparam logic [0:TEXT_LENGTH-1] [7:0] TEXT = "Your score:";
-
-localparam SCORE_X = 384;
-localparam SCORE_Y = 340; 
-localparam SCORE_LENGTH = 4; 
-localparam SCORE_WIDTH  = SCORE_LENGTH * 8;
-
-localparam STAR_X = 362;
-localparam STAR_Y = 468;
-localparam STAR_LENGTH = 50;
-localparam STAR_GAP = 6;
-localparam STAR_NR = 3;
-localparam TILE_WIDTH = STAR_LENGTH + STAR_GAP;
-localparam STARS_LENGTH = (TILE_WIDTH * STAR_NR) - STAR_GAP;
-localparam STAR_SCALE = 2; 
-localparam STAR_ADDR_SHIFT = $clog2(STAR_SCALE);
-
 // --- SYGNAŁY WEWNĘTRZNE ---
 logic [11:0] rgb_nxt;
-logic [15:0] end_score;
+logic [31:0] end_score;
 
 logic [6:0] voff_text;
 logic [7:0] hoff_text;
@@ -53,7 +38,7 @@ logic [9:0] px_in_star;
 
 logic [6:0] voff_score;
 logic [7:0] hoff_score;
-logic [3:0] digit_3, digit_2, digit_1, digit_0;
+logic [3:0] digit_4, digit_3, digit_2, digit_1, digit_0;
 logic [3:0] current_digit;
 
 // Flagi kombinacyjne
@@ -76,13 +61,6 @@ logic [10:0] brickwall_x, brickwall_y;
 logic [17:0] brickwall_addr_nxt, brickwall_addr;
 logic [11:0] brickwall_pixels;
 
-function automatic logic [10:0] wrap_coordinate(
-    input logic [10:0] coordinate,
-    input logic [10:0] dimension
-);
-    wrap_coordinate = (coordinate >= dimension) ? coordinate - dimension : coordinate;
-endfunction
-
 // --- INSTANCJE ROM ---
 font_rom u_font_rom (
    .clk(clk),
@@ -96,7 +74,7 @@ star_rom u_star_rom (
    .star_pixel(star_pixel)   
 );
 
-brickwall u_brickwall_rom (
+brickwall_rom u_brickwall_rom (
     .clk,
     .addr(brickwall_addr),
     .brickwall_px(brickwall_pixels)
@@ -122,31 +100,32 @@ always_comb begin
     brickwall_y = wrap_coordinate(brickwall_y, 11'd274);
     brickwall_addr_nxt = (brickwall_y * 17'd600) + brickwall_x;
 
-    // Logika TEXT
-    if ((vga_in.hcount >= TEXT_X && vga_in.hcount < TEXT_X + (TEXT_WIDTH << TEXT_ADDR_SHIFT)) && 
-        (vga_in.vcount >= TEXT_Y && vga_in.vcount < TEXT_Y + (TEXT_HEIGHT << TEXT_ADDR_SHIFT))) begin
+    // Logika YOUR SCORE
+    if ((vga_in.hcount >= SCORE_LABEL_X && vga_in.hcount < SCORE_LABEL_X + (SCORE_LABEL_WIDTH << ENDSCREEN_CHAR_ADDR_SHIFT)) && 
+        (vga_in.vcount >= SCORE_LABEL_Y && vga_in.vcount < SCORE_LABEL_Y + (BASE_CHAR_HEIGHT << ENDSCREEN_CHAR_ADDR_SHIFT))) begin
         
         in_text       = 1'b1;
-        hoff_text     = (vga_in.hcount - TEXT_X) >> TEXT_ADDR_SHIFT;
-        voff_text     = (vga_in.vcount - TEXT_Y) >> TEXT_ADDR_SHIFT;
+        hoff_text     = (vga_in.hcount - SCORE_LABEL_X) >> ENDSCREEN_CHAR_ADDR_SHIFT;
+        voff_text     = (vga_in.vcount - SCORE_LABEL_Y) >> ENDSCREEN_CHAR_ADDR_SHIFT;
     
-        char_code     = TEXT[ hoff_text / 8 ]; 
+        char_code     = SCORE_LABEL[ hoff_text / 8 ]; 
         font_addr_nxt = { char_code[6:0], 4'(voff_text[3:0]) };
         px_h_in_char  = hoff_text[2:0];
 
     // Logika SCORE
-    end else if ((vga_in.hcount >= SCORE_X && vga_in.hcount < SCORE_X + (SCORE_WIDTH << TEXT_ADDR_SHIFT)) && 
-                 (vga_in.vcount >= SCORE_Y && vga_in.vcount < SCORE_Y + (TEXT_HEIGHT << TEXT_ADDR_SHIFT))) begin
+    end else if ((vga_in.hcount >= SCORE_X && vga_in.hcount < SCORE_X + (SCORE_WIDTH << ENDSCREEN_CHAR_ADDR_SHIFT)) && 
+                 (vga_in.vcount >= SCORE_Y && vga_in.vcount < SCORE_Y + (BASE_CHAR_HEIGHT << ENDSCREEN_CHAR_ADDR_SHIFT))) begin
 
         in_score   = 1'b1;
-        hoff_score = (vga_in.hcount - SCORE_X) >> TEXT_ADDR_SHIFT;
-        voff_score = (vga_in.vcount - SCORE_Y) >> TEXT_ADDR_SHIFT;
+        hoff_score = (vga_in.hcount - SCORE_X) >> ENDSCREEN_CHAR_ADDR_SHIFT;
+        voff_score = (vga_in.vcount - SCORE_Y) >> ENDSCREEN_CHAR_ADDR_SHIFT;
 
         case (hoff_score / 8)
-            8'd0: current_digit = digit_3;
-            8'd1: current_digit = digit_2;
-            8'd2: current_digit = digit_1;
-            8'd3: current_digit = digit_0;
+            8'd0: current_digit = digit_4;
+            8'd1: current_digit = digit_3;
+            8'd2: current_digit = digit_2;
+            8'd3: current_digit = digit_1;
+            8'd4: current_digit = digit_0;
             default: current_digit = 4'd0;
         endcase
 
@@ -169,9 +148,9 @@ always_comb begin
             star_addr_nxt = (voff_star << 1) + (voff_star << 4) + (voff_star << 5);
             star_addr_nxt += px_in_star; 
 
-            if (star_idx == 0 && end_score >= 200) star_is_earned = 1'b1;
-            if (star_idx == 1 && end_score >= 400) star_is_earned = 1'b1;
-            if (star_idx == 2 && end_score >= 600) star_is_earned = 1'b1;
+            if (star_idx == 0 && end_score >= 20000) star_is_earned = 1'b1;
+            if (star_idx == 1 && end_score >= 40000) star_is_earned = 1'b1;
+            if (star_idx == 2 && end_score >= 60000) star_is_earned = 1'b1;
         end
     end
 end
@@ -185,6 +164,7 @@ always_ff @(posedge clk or negedge rst_n) begin
         brickwall_addr    <= '0;
 
         end_score         <= '0;
+        digit_4           <= '0;
         digit_3           <= '0;
         digit_2           <= '0;
         digit_1           <= '0;
@@ -205,6 +185,7 @@ always_ff @(posedge clk or negedge rst_n) begin
         brickwall_addr    <= brickwall_addr_nxt;
         
         end_score         <= end_score_in; 
+        digit_4           <= (end_score_in / 10000) % 10; 
         digit_3           <= (end_score_in / 1000) % 10; 
         digit_2           <= (end_score_in / 100) % 10;  
         digit_1           <= (end_score_in / 10) % 10;   

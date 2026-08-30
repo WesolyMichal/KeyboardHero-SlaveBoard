@@ -10,14 +10,14 @@ module song_mask #(
     input game_if game_engine,
 
     input logic enable_in,
-    input logic [1:0] song_select, // Input to select the song from ROM
+    input logic [1:0] song_select,
 
     input vga_if vga_in,
     output vga_if vga_out,
 
     output logic final_note,
 
-    output logic [15:0] end_score
+    output logic [31:0] end_score
 );
 
 vga_if vga_del, vga_player, vga_fill, vga_score;
@@ -32,13 +32,13 @@ note_t note_player [0:2];
 wire game_if game_engine_del;
 wire logic [1:0] song_select_player;
 
-wire logic [15:0] current_score;
+wire logic [31:0] current_score;
 wire logic [3:0]  current_multiplier;
+
+
 
 game_action status_del;
 wire logic [5:0] buttons_del;
-
-wire logic enable_out;
 
 delay #(
     .CLK_DEL(5),
@@ -50,15 +50,6 @@ delay #(
     .dout(game_engine_del)
 );
 
-// delay #(
-//     .CLK_DEL(4),
-//     .WIDTH(2)
-// ) u_delay_select (
-//     .clk,
-//     .rst_n,
-//     .din(song_select),
-//     .dout(song_select_del)
-// );
 
 delay #(
     .CLK_DEL(5),
@@ -128,15 +119,18 @@ delay #(
     .dout({status_del})
 );
 
+
+
 score_counter u_score_counter(
-    .clk,
+    .clk(tick),
     .rst_n,
+    .enable_song(enable_in),
     .current_multiplier,
     .current_score,
     .end_score,
     .game_active(enable_note_fill),
     .player_action(status_del),
-    .action_strobe(tick) // trzeba zmienic zeby dodawalo co tick gdy trzymamy dlugo
+    .action_strobe(tick)
 );
 
 score_mask u_score_mask(

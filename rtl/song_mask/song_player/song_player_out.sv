@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Michał Wesołowski
+ *
+ * Description:
+ * Generates song player's outputs.
+ */
 import game_pkg::*;
 
 module song_player_out(

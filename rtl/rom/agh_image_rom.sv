@@ -10,7 +10,7 @@
  * The input 'address' is a 12-bit number, composed of the concatenated
  * 6-bit y and 6-bit x pixel coordinates.
  * The output 'rgb' is 12-bit number with concatenated
- * red, green and blue color values (4-bit each)
+ * red, green and blue color values (4-bit each).
  */
 
  module agh_image_rom (

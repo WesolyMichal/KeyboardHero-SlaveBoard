@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Michał Wesołowski
+ *
+ * Description:
+ * Features song player's fsm and note address changes.
+ */
 import game_pkg::*;
 
 module song_player_ctl(

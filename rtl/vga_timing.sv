@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Jakub Suder
+ *
+ * Description:
+ * Source of vga sygnals.
+ */
 import vga_pkg::*;
 
 module vga_timing (

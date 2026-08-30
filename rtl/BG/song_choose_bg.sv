@@ -1,4 +1,14 @@
+/*
+ * Copyright (C) 2026  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Jakub Suder
+ *
+ * Description:
+ * This is module responsible for creating backgroud for SONG_CHOOSE state of slave_FSM.
+ */
+
 import vga_pkg::*;
+import bg_pkg::*;
 
 module song_choose_bg (
     input logic clk,
@@ -11,53 +21,6 @@ module song_choose_bg (
     output logic [11:0] rgb_out_choose_bg,
     output logic enable_choose_out
 );
-
-import game_pkg::*;
-
-// --- PARAMETRY KOLORÓW --- 
-localparam [11:0] TEXT_COLOR   = 12'hf_f_f;
-localparam [11:0] INSTR_TEXT_COLOR = 12'h0_f_f;
-localparam [11:0] CURSOR_COLOR = 12'hf_f_0; 
-
-// --- PARAMETRY TEKSTU I SKALOWANIA ---
-localparam TEXT_SCALE = 2;
-localparam BASE_CHAR_WIDTH = 8;
-localparam BASE_CHAR_HEIGHT = 16;
-localparam TEXT_ADDR_SHIFT = $clog2(TEXT_SCALE);
-localparam CHAR_WIDTH = BASE_CHAR_WIDTH * TEXT_SCALE;
-localparam CHAR_HEIGHT = BASE_CHAR_HEIGHT * TEXT_SCALE;
-
-// --- INSTRUKCJA---
-localparam INSTR_START_X = 64;
-localparam INSTR_START_Y = 420; //;)
-localparam INSTR_ROW_STEP_PIXELS = 48;
-localparam INSTR_ROW_INDEX_WIDTH = $clog2(VER_PIXELS / INSTR_ROW_STEP_PIXELS + 1);
-localparam logic [0:55] [7:0] INSTR_0 = "               HOW TO PLAY KEYBOARD HERO?               ";
-localparam logic [0:55] [7:0] INSTR_1 = "   To play, press SPACEBAR together with buttons 1-6.   ";
-localparam logic [0:55] [7:0] INSTR_2 = "       Buttons 1-6 match the colors of the notes.       ";
-localparam logic [0:55] [7:0] INSTR_3 = " Hold the matching button for long notes until they end.";
-localparam logic [0:55] [7:0] INSTR_4 = "  Use STRUM < or > at the same time as the note button. ";
-localparam logic [0:55] [7:0] INSTR_5 = "TO NAVIGATE THRU GAME STAGES USE ENTER BUTTON ESC BUTTON";
-
-// --- PIOSENKI---
-localparam SONG_LEN = 24;
-localparam SONG_NAME_START_X = 275; 
-localparam SONG_NAME_START_Y = 100; 
-localparam CURSOR_X = 250; 
-localparam BASE_ROW_STEP_PIXELS = 32;
-localparam ROW_HEIGHT = CHAR_HEIGHT;
-localparam ROW_STEP_PIXELS = BASE_ROW_STEP_PIXELS * TEXT_SCALE;
-localparam ROW_STEP_SHIFT = $clog2(ROW_STEP_PIXELS);
-localparam ROW_INDEX_WIDTH = $clog2(VER_PIXELS / ROW_STEP_PIXELS + 1);
-localparam logic [0:SONG_LEN-1] [7:0] SONG_0 = "1. Wlazl kotek na plotek";
-localparam logic [0:SONG_LEN-1] [7:0] SONG_1 = "2. Hejnal mariacki      ";
-localparam logic [0:SONG_LEN-1] [7:0] SONG_2 = "3. Stairway to Heaven   ";
-localparam logic [0:SONG_LEN-1] [7:0] SONG_3 = "4. Literka A, literka B ";
-
-localparam HEADING_NAME_START_X = 223; 
-localparam HEADING_NAME_START_Y = 33; 
-localparam logic [0:45] [7:0] Heading = "CHOOSE YOUR SONG FROM THE LIST BELOW USING < >";
-
 
 // --- SYGNAŁY WEWNĘTRZNE ---
 logic [11:0] rgb_nxt;
@@ -75,28 +38,22 @@ logic [INSTR_ROW_INDEX_WIDTH-1:0] instruction_row;
 logic [6:0]  y_in_instruction;
 
 //Flagi kombinacyjne
-logic in_text, in_instruction, in_cursor;
+logic in_text, in_instruction, in_cursor, in_sticker;
 
 // Rejestry opóźniające
 logic [1:0] vblnk_reg, hblnk_reg;
-logic [1:0] in_text_reg, in_instruction_reg, in_cursor_reg;
+logic [1:0] in_text_reg, in_instruction_reg, in_cursor_reg, in_sticker_reg;
 logic [5:0] px_h_in_char_reg;
 logic [1:0] enable_reg;
 
 // Sygnały dla pamięci ROM
 logic [10:0] font_addr, font_addr_nxt;
 logic [7:0]  font_pixels;
-
 logic [10:0] brickwall_x, brickwall_y;
 logic [17:0] brickwall_addr_nxt, brickwall_addr;
 logic [11:0] brickwall_pixels;
-
-function automatic logic [10:0] wrap_coordinate(
-    input logic [10:0] coordinate,
-    input logic [10:0] dimension
-);
-    wrap_coordinate = (coordinate >= dimension) ? coordinate - dimension : coordinate;
-endfunction
+logic [17:0] sticker_addr_nxt, sticker_addr;
+logic [11:0] sticker_pixels;
 
 // --- INSTANCJA FONT ROM ---
 font_rom u_font_rom (
@@ -105,7 +62,13 @@ font_rom u_font_rom (
     .char_line_pixels(font_pixels)
 );
 
-brickwall u_brickwall_rom (
+sticker_rom u_sticker_rom (
+    .clk,
+    .addr(sticker_addr),
+    .sticker_px(sticker_pixels)
+);
+
+brickwall_rom u_brickwall_rom (
     .clk,
     .addr(brickwall_addr),
     .brickwall_px(brickwall_pixels)
@@ -117,6 +80,7 @@ always_comb begin
     in_instruction = '0;
     in_cursor     = '0;
     font_addr_nxt = '0;
+    sticker_addr_nxt = '0;
     char_code     = '0;
     hoff_text     = '0;
     voff_text     = '0;
@@ -138,8 +102,8 @@ always_comb begin
     if (vga_in.vcount >= HEADING_NAME_START_Y  && vga_in.vcount < HEADING_NAME_START_Y + CHAR_HEIGHT &&
         vga_in.hcount >= HEADING_NAME_START_X && vga_in.hcount < HEADING_NAME_START_X + 36 * CHAR_WIDTH) begin
             in_text   = 1'b1;
-            hoff_text = (vga_in.hcount - HEADING_NAME_START_X) >> TEXT_ADDR_SHIFT;
-            voff_text = (vga_in.vcount - HEADING_NAME_START_Y) >> TEXT_ADDR_SHIFT;
+            hoff_text = (vga_in.hcount - HEADING_NAME_START_X) >> SCHOOSE_TEXT_ADDR_SHIFT;
+            voff_text = (vga_in.vcount - HEADING_NAME_START_Y) >> SCHOOSE_TEXT_ADDR_SHIFT;
 
             char_code = Heading[hoff_text >> 3];
             font_addr_nxt = {char_code[6:0], 4'(voff_text[3:0])};
@@ -153,19 +117,19 @@ always_comb begin
         if (vga_in.hcount >= CURSOR_X && vga_in.hcount < CURSOR_X + CHAR_WIDTH) begin
             if (current_row == selected_song) begin
                 in_cursor     = 1'b1;
-                hoff_text     = (vga_in.hcount - CURSOR_X) >> TEXT_ADDR_SHIFT;
-                voff_text     = y_in_row >> TEXT_ADDR_SHIFT;
+                hoff_text     = (vga_in.hcount - CURSOR_X) >> SCHOOSE_TEXT_ADDR_SHIFT;
+                voff_text     = y_in_row >> SCHOOSE_TEXT_ADDR_SHIFT;
                 char_code     = 8'h2D;
                 font_addr_nxt = {char_code[6:0], 4'(voff_text[3:0])};
                 px_h_in_char  = hoff_text[2:0];
             end
         end
         
-        // Logika TEKSTU PIOSENEK
+        // Logika nazw piosenek
         else if (vga_in.hcount >= SONG_NAME_START_X && vga_in.hcount < SONG_NAME_START_X + SONG_LEN * CHAR_WIDTH) begin
             in_text   = 1'b1;
-            hoff_text = (vga_in.hcount - SONG_NAME_START_X) >> TEXT_ADDR_SHIFT;
-            voff_text = y_in_row >> TEXT_ADDR_SHIFT;
+            hoff_text = (vga_in.hcount - SONG_NAME_START_X) >> SCHOOSE_TEXT_ADDR_SHIFT;
+            voff_text = y_in_row >> SCHOOSE_TEXT_ADDR_SHIFT;
 
             case (current_row)
                 3'd0: char_code = SONG_0[hoff_text >> 3];
@@ -204,8 +168,8 @@ always_comb begin
         if (y_in_instruction < ROW_HEIGHT) begin
         in_instruction = 1'b1;
         in_text   = 1'b1;
-        hoff_text = (vga_in.hcount - INSTR_START_X) >> TEXT_ADDR_SHIFT;
-        voff_text = y_in_instruction >> TEXT_ADDR_SHIFT;
+        hoff_text = (vga_in.hcount - INSTR_START_X) >> SCHOOSE_TEXT_ADDR_SHIFT;
+        voff_text = y_in_instruction >> SCHOOSE_TEXT_ADDR_SHIFT;
 
         case (instruction_row)
             5'd0: char_code = INSTR_0[hoff_text >> 3];
@@ -221,6 +185,12 @@ always_comb begin
         px_h_in_char  = hoff_text[2:0];
         end
     end
+    //Logika STICKER
+    if ((vga_in.hcount >= STICKER_X && vga_in.hcount < STICKER_X + STICKER_LENGTH) &&
+        (vga_in.vcount >= STICKER_Y && vga_in.vcount < STICKER_Y + STICKER_WIDTH )) begin
+            in_sticker = 1'b1;
+            sticker_addr_nxt = ((vga_in.vcount - STICKER_Y) * 18'd300) + (vga_in.hcount - STICKER_X);
+    end
 end
 
 // --- Rejestracja danych ---
@@ -228,6 +198,8 @@ always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         font_addr       <= '0;
         brickwall_addr  <= '0;
+        
+        sticker_addr     <= '0;
 
         selected_song   <= '0;
         
@@ -239,9 +211,11 @@ always_ff @(posedge clk or negedge rst_n) begin
         in_instruction_reg  <= '0;
         in_cursor_reg       <= '0;
         px_h_in_char_reg    <= '0;
+        in_sticker_reg    <= 2'b0;
     end else begin
         font_addr       <= font_addr_nxt;
         brickwall_addr  <= brickwall_addr_nxt;
+        sticker_addr    <= sticker_addr_nxt;
 
         selected_song   <= master_song;
         
@@ -253,6 +227,7 @@ always_ff @(posedge clk or negedge rst_n) begin
         in_instruction_reg  <= {in_instruction_reg[0], in_instruction};
         in_cursor_reg       <= {in_cursor_reg[0], in_cursor};
         px_h_in_char_reg    <= {px_h_in_char_reg[2:0], px_h_in_char};
+        in_sticker_reg    <= {in_sticker_reg[0], in_sticker};
     end
 end
 
@@ -268,6 +243,9 @@ always_comb begin
         end else begin
             rgb_nxt = TEXT_COLOR;
         end
+    end else if ((in_sticker_reg[1]) && (sticker_pixels != 12'h333) &&(sticker_pixels != 12'h233)) begin 
+        rgb_nxt = sticker_pixels; // Kolor piksela naklejki
+   
     end else begin 
         rgb_nxt = brickwall_pixels;
     end

@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Jakub Suder
+ *
+ * Description:
+ * That module controls drawing and filling buttons placed under hit line accordingly to state of buttons.
+ */
 import song_mask_pkg::*;
 import vga_pkg::*;
 

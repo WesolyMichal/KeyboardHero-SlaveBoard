@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Jakub Suder
+ *
+ * Description:
+ * Controls state of screen.
+ */
 import game_pkg::*;
 
 module slave_FSM (

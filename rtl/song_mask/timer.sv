@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Michał Wesołowski
+ *
+ * Description:
+ * Basic counter with a frequency-parametrised count.
+ */
 module timer #(
     parameter FREQUENCY = 1000
 )(

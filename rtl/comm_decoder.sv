@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Michał Wesołowski
+ *
+ * Description:
+ * It reads UART messages and translates them into the state of its outputs..
+ */
 import game_pkg::*;
 
 module comm_decoder(
@@ -15,8 +23,6 @@ module comm_decoder(
     output game_if game_engine,
     output logic enter,
     output logic esc,
-
-    output logic [12:0] led,
 
     output logic [1:0] song_select,
     input logic [3:0] functional_buttons
@@ -118,9 +124,5 @@ always_comb begin
     functional_buttons_rise =
         functional_buttons & ~functional_buttons_prev;
 end
-
-//assign led[7:0] = game_engine;
-// assign led[10] = song_confirm;
-// assign led[12:11] = song_select[1:0];
 
 endmodule

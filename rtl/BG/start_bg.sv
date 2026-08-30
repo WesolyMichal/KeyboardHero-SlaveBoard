@@ -1,8 +1,18 @@
+/*
+ * Copyright (C) 2026  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Jakub Suder
+ *
+ * Description:
+ * This is module responsible for creating backgroud for HOME_SCREEN and WAIT_HOMESCREEN states of slave_FSM.
+ */
+
 import vga_pkg::*;
+import bg_pkg::*;
 
 module start_bg (
     input logic clk,
-    input logic rst_n,               // Reset synchroniczny, aktywny stanem niskim
+    input logic rst_n,
     input logic enter,
     input logic enable_start_in,
 
@@ -11,48 +21,6 @@ module start_bg (
     output logic [11:0] rgb_out_start_bg,
     output logic enable_start_out
 );
-
-import game_pkg::*;
-
-// --- PARAMETRY --- 
-localparam [11:0] GAME_NAME_COLOR = 12'hf_f_0;
-localparam [11:0] AUTHORS_COLOR = 12'hf_f_f;
-
-localparam LOGO_X = 0;
-localparam LOGO_Y = 704;
-localparam LOGO_LENGTH = 48; 
-localparam LOGO_WIDTH  = 64; 
-localparam LOGO_SCALE = 1; 
-localparam LOGO_ADDR_SHIFT = $clog2(LOGO_SCALE);
-
-localparam ENTER_X = 384;
-localparam ENTER_Y = 426;
-localparam ENTER_LENGTH = 128; 
-localparam ENTER_WIDTH  = 64;  
-localparam ENTER_SCALE = 2; 
-localparam ENTER_ADDR_SHIFT = $clog2(ENTER_SCALE);
-
-localparam BASE_CHAR_WIDTH = 8;
-localparam BASE_CHAR_HEIGHT = 16;
-
-localparam GAME_NAME_X = 96;
-localparam GAME_NAME_Y = 200;
-localparam GAME_NAME_LENGTH = 13;
-localparam GAME_NAME_SCALE = 8;
-localparam GAME_NAME_ADDR_SHIFT = $clog2(GAME_NAME_SCALE);
-localparam logic [0:GAME_NAME_LENGTH-1] [7:0] GAME_NAME = "Keyboard-Hero";
-
-localparam AUTHORS_X = 308; 
-localparam AUTHORS_Y = 720;
-localparam AUTHORS_LENGTH = 51;
-localparam AUTHORS_SCALE = 1;
-localparam AUTHORS_ADDR_SHIFT = $clog2(AUTHORS_SCALE);
-localparam logic [0:AUTHORS_LENGTH-1] [7:0] Authors = "GAME DEVELOPED BY MICHAL WESOLOWSKI AND JAKUB SUDER";
-
-// localparam STICKER_X = 100;
-// localparam STICKER_Y = 100;
-// localparam STICKER_LENGTH = 300;
-// localparam STICKER_WIDTH = 335;
 
 // --- SYGNAŁY WEWNĘTRZNE ---
 logic [11:0] rgb_nxt;
@@ -84,16 +52,9 @@ logic [17:0] brickwall_addr_nxt, brickwall_addr;
 // logic [17:0] sticker_addr_nxt, sticker_addr;
 logic [10:0] brickwall_x, brickwall_y;
 
-function automatic logic [10:0] wrap_coordinate(
-    input logic [10:0] coordinate,
-    input logic [10:0] dimension
-);
-    wrap_coordinate = (coordinate >= dimension) ? coordinate - dimension : coordinate;
-endfunction
-
 // Wyjścia z pamięci ROM
-logic [11:0] logo_rgb;
-logic        enter_bit;
+logic [11:0] logo_rgb; 
+logic        enter_px;
 logic [7:0]  font_pixels;
 logic [11:0] brickwall_pixels;
 //logic [11:0] sticker_pixels;
@@ -108,7 +69,7 @@ agh_image_rom u_agh_image_rom (
 enter_button_rom u_enter_button_rom  (
      .clk,
      .rom_addr(enter_addr),
-     .enter_pixel_bit(enter_bit)
+     .enter_px(enter_px)
  );
 
  font_rom u_font_rom (
@@ -117,7 +78,7 @@ enter_button_rom u_enter_button_rom  (
     .char_line_pixels(font_pixels)
  );
 
- brickwall u_brickwall_rom (
+ brickwall_rom u_brickwall_rom (
     .clk,
     .addr(brickwall_addr),
     .brickwall_px(brickwall_pixels)
@@ -250,7 +211,7 @@ always_comb begin
     end else if (in_logo_reg[1]) begin 
         rgb_nxt = logo_rgb;
     end else if (in_button_reg[1]) begin 
-        rgb_nxt = enter_bit ? 12'hf_f_f : 12'h0_0_0;
+        rgb_nxt = enter_px ? 12'hf_f_f : 12'h0_0_0;
         if (enter_reg[1])
             rgb_nxt = ~rgb_nxt;
     end else if (in_game_name_reg[1] && font_pixels[~px_h_in_char_reg[5:3]]) begin 
@@ -263,7 +224,6 @@ always_comb begin
         rgb_nxt = brickwall_pixels;
     end
 end
-
 
 // --- Wyjściowy rejestr ---
 always_ff @(posedge clk or negedge rst_n) begin

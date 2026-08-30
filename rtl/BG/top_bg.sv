@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Jakub Suder
+ *
+ * Description:
+ * Top module of backgrounds.
+ */
 import vga_pkg::*;
 import game_pkg::*;
 

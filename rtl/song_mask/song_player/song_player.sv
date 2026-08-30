@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Michał Wesołowski
+ *
+ * Description:
+ * Controls the playback (falling of the notes) of the current song.
+ */
 import game_pkg::*;
 import vga_pkg::*;
 

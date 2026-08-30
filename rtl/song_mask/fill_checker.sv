@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Michał Wesołowski
+ *
+ * Description:
+ * Checks whether the y position of the current pixel is within a given column of a given note.
+ */
 import game_pkg::*;
 
 module fill_checker #(

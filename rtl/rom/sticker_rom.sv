@@ -1,17 +1,25 @@
+/*
+ * Copyright (C) 2026  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Jakub Suder
+ *
+ * Description:
+ * This is the ROM for the 'sticker.data' bitmap.
+ * WIDTH = 300 px, HEIGHT = 335 px
+ * Address is a 18-bit number, calculated as addry * 400 + addrx.
+ * Bitmap is stored as 2-bit values, where each value corresponds to a color:
+ * 00 - #EED,
+ * 01 - #110
+ * 10 - #988
+ * 11 - #445
+ * The output 'sticker_px' is 12-bit number with concatenated
+ * red, green and blue color values (4-bit each).
+ */
 module sticker_rom (
     input  logic clk,
-    input  logic [17:0] addr, // address = {addry * 400 + addrx}
+    input  logic [17:0] addr,
     output logic [11:0] sticker_px
 );
-// image rom content of: sticker.png
-// WIDTH = 300
-// HEIGHT = 335
-// Number of colors = 4
-// Color Palette (Index: R, G, B) / 12-bit Hex (4 bits per channel)
-//   0: RGB(228, 224, 223) - #EED
-//   1: RGB(18, 16, 14) - #110
-//   2: RGB(147, 141, 136) - #988
-//   3: RGB(68, 69, 84) - #445
 
     (* rom_style = "block" *) logic [1:0] rom [0:100499];
 

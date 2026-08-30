@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Michał Wesołowski
+ *
+ * Description:
+ * Collects signals from all the fill checkers and colors the pixel accordingly.
+ */
 import game_pkg::*;
 import song_mask_pkg::*;
 import vga_pkg::*;

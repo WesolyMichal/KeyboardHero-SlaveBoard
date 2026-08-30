@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Jakub Suder
+ *
+ * Description:
+ * Creates on song_bg value of current score and multiplier.
+ */
 import vga_pkg::*;
 
 module score_mask (
@@ -10,12 +18,11 @@ module score_mask (
     input logic enable_in,
     output logic enable_out,
 
-    // Sygnały z score_countera
-    input logic [15:0] current_score,
+    input logic [31:0] current_score,
     input logic [3:0]  current_multiplier
 );
 // --- PARAMETRY --- 
-localparam [11:0] TEXT_COLOR = 12'hfff;
+localparam [11:0] TEXT_COLOR = 12'hf00; 
 localparam TEXT_SCALE = 2; 
 localparam TEXT_ADDR_SHIFT = $clog2(TEXT_SCALE);
 
@@ -38,7 +45,6 @@ localparam logic [0:6][7:0] STR_SCORE = "Score: ";
 localparam logic [0:7][7:0] STR_MULTI = "Multi: x";
 
 // --- SYGNAŁY WEWNĘTRZNE ---
-// Sygnały do wyliczeń
 logic [3:0] s_4, s_3, s_2, s_1, s_0;
 logic [3:0] m_1, m_0;
 
@@ -77,9 +83,8 @@ font_rom u_font_rom (
     .char_line_pixels(font_pixels)
 );
 
-// --- LOGIKA POZYCJI, ZNAKÓW I WYLICZEŃ (Cykl 0) ---
-always_comb begin
-    // Wyzerowanie flag na starcie cyklu
+// --- LOGIKA POZYCJI, ZNAKÓW I WYLICZEŃ ---
+always_comb begin   
     in_score     = 1'b0;
     in_multi     = 1'b0;
     font_addr    = '0;
@@ -135,7 +140,7 @@ always_comb begin
     end
 end
 
-// --- SYNCHRONIZACJA FLAG (Cykl 1) ---
+// --- SYNCHRONIZACJA FLAG  ---
 always_ff @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         d1_in_score     <= 1'b0;
@@ -148,7 +153,7 @@ always_ff @(posedge clk or negedge rst_n) begin
     end
 end
 
-// --- ŁĄCZENIE KOLORÓW (NAKŁADKA) ---
+// --- ŁĄCZENIE KOLORÓW ---
 always_comb begin
     rgb_nxt = d1.rgb;
 
@@ -157,7 +162,7 @@ always_comb begin
         
     end else if (enable_reg[0]) begin
         if((d1_in_score || d1_in_multi) && font_pixels[~d1_px_h_in_char]) begin
-            rgb_nxt = TEXT_COLOR;
+            rgb_nxt = TEXT_COLOR; 
         end             
     end
 end

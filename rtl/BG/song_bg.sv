@@ -1,4 +1,14 @@
+/*
+ * Copyright (C) 2026  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Jakub Suder
+ *
+ * Description:
+ * This is module responsible for creating backgroud for PLAY_SONG state of slave_FSM.
+ */
+
 import vga_pkg::*;
+import bg_pkg::*;
 
 module song_bg (
     input logic clk,
@@ -11,28 +21,15 @@ module song_bg (
     output logic enable_song_out
 );
 
-// --- PARAMETRY KOLORÓW --- 
-localparam [11:0] BG_COLOR   = 12'h3_3_5;
-localparam [11:0] NECK_COLOR = 12'h1_1_2; 
-localparam [11:0] LINE_COLOR = 12'h8_8_9; 
+localparam CROWD1_X = 64;
+localparam CROWD1_Y = 612;
+localparam CROWD1_WIDTH = 256;
+localparam CROWD1_HEIGHT = 212;
 
-// Kolory Mibombo
-localparam [11:0] MIBOMBO_OUTLINE = 12'hf_f_f;
-
-// --- PARAMETRY GRYFU  ---
-localparam NECK_X      = 320; 
-localparam NECK_Y      = 0;
-localparam NECK_WIDTH  = 384; 
-localparam NECK_HEIGHT = 768;
-
-// --- PARAMETRY GŁOŚNIKÓW ---
-localparam MIBOMBO_WIDTH  = 218;
-localparam MIBOMBO_HEIGHT = 292;
-localparam MIBOMBO_Y      = 400; 
-
-localparam MIBOMBO_L_X    = 80;  
-localparam MIBOMBO_R_X    = 690; 
-
+localparam CROWD2_X = 704;
+localparam CROWD2_Y = 635;
+localparam CROWD2_WIDTH = 256;
+localparam CROWD2_HEIGHT = 235;
 
 // --- SYGNAŁY WEWNĘTRZNE ---
 logic [11:0] rgb_nxt;
@@ -40,17 +37,22 @@ logic [1:0]  enable_reg;
 
 logic [15:0] hoff_mibombo_l, voff_mibombo_l;
 logic [15:0] hoff_mibombo_r, voff_mibombo_r;
+logic [15:0] hoff_crowd1, voff_crowd1;
+logic [15:0] hoff_crowd2, voff_crowd2;
 
 // Flagi kombinacyjne
-logic in_neck, in_line, in_mibombo_l, in_mibombo_r;
+logic in_neck, in_line, in_mibombo_l, in_mibombo_r, in_crowd1, in_crowd2;
 
 // Rejestry opóźniające 
 logic [1:0] vblnk_reg, hblnk_reg;
-logic [1:0] in_neck_reg, in_line_reg, in_mibombo_l_reg, in_mibombo_r_reg;
+logic [1:0] in_neck_reg, in_line_reg, in_mibombo_l_reg, in_mibombo_r_reg, in_crowd1_reg, in_crowd2_reg;
 
 //Sygnały dla pamięci ROM
 logic [15:0] mibombo_addr, mibombo_addr_nxt;
-logic        mibombo_pixel; 
+logic [11:0] mibombo_pixel; 
+
+logic [15:0] crowd1_addr, crowd1_addr_nxt, crowd2_addr, crowd2_addr_nxt;
+logic [11:0] crowd1_px, crowd2_px;
 
 // --- ROM DLA GŁOŚNIKA ---
 mibombo_rom u_mibombo_rom (
@@ -65,10 +67,16 @@ always_comb begin
     in_line        = 1'b0;
     in_mibombo_l   = 1'b0;
     in_mibombo_r   = 1'b0;
+    in_crowd1      = 1'b0;
+    in_crowd2      = 1'b0;
     hoff_mibombo_l = '0;
     voff_mibombo_l = '0;
     hoff_mibombo_r = '0;
     voff_mibombo_r = '0;
+    hoff_crowd1 = '0;
+    voff_crowd1 = '0;
+    hoff_crowd2 = '0;
+    voff_crowd2 = '0;
 
     // Logika GRYFU i Linii
     if ((vga_in.hcount >= NECK_X && vga_in.hcount <= NECK_X + NECK_WIDTH) && 
@@ -113,12 +121,30 @@ always_comb begin
     end else begin
         mibombo_addr_nxt = '0;
     end
+
+    if((vga_in.hcount >= CROWD1_X && vga_in.hcount < CROWD1_X + CROWD1_WIDTH) &&
+        (vga_in.vcount >= CROWD1_Y && vga_in.vcount < CROWD1_Y + CROWD1_HEIGHT)) begin
+            in_crowd1 = 1'b1;
+            hoff_crowd1 = vga_in.hcount - CROWD1_WIDTH;
+            voff_crowd1 = vga_in.vcount - CROWD1_HEIGHT;
+            crowd1_addr = {voff_crowd1[7:0], voff_crowd1[7:0]};
+        end
+
+    if((vga_in.hcount >= CROWD2_X && vga_in.hcount < CROWD2_X + CROWD2_WIDTH) &&
+        (vga_in.vcount >= CROWD2_Y && vga_in.vcount < CROWD2_Y + CROWD2_HEIGHT)) begin
+            in_crowd2 = 1'b1;
+            hoff_crowd2 = vga_in.hcount - CROWD2_WIDTH;
+            voff_crowd2 = vga_in.vcount - CROWD2_HEIGHT;
+            crowd2_addr = {voff_crowd2[7:0], voff_crowd2[7:0]};
+        end
 end
 
 // --- Rejestracja danych ---
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         mibombo_addr    <= '0;
+        crowd1_addr     <= '0;
+        crowd2_addr     <= '0;
 
         enable_reg          <= '0;
 
@@ -128,8 +154,12 @@ always_ff @(posedge clk or negedge rst_n) begin
         in_line_reg      <= '0;
         in_mibombo_l_reg <= '0;
         in_mibombo_r_reg <= '0;
+        in_crowd1_reg     <= '0;
+        in_crowd2_reg     <= '0;
     end else begin
         mibombo_addr    <= mibombo_addr_nxt;
+        crowd1_addr     <= crowd1_addr_nxt;
+        crowd2_addr     <= crowd2_addr_nxt;
 
         enable_reg      <= {enable_reg[0], enable_song_in};
         
@@ -139,6 +169,8 @@ always_ff @(posedge clk or negedge rst_n) begin
         in_line_reg      <= {in_line_reg[0], in_line};
         in_mibombo_l_reg <= {in_mibombo_l_reg[0], in_mibombo_l};
         in_mibombo_r_reg <= {in_mibombo_r_reg[0], in_mibombo_r};
+        in_crowd1_reg     <= {in_crowd1_reg[0], in_crowd1};
+        in_crowd2_reg     <= {in_crowd2_reg[0], in_crowd2};
     end
 end
 
@@ -157,7 +189,11 @@ always_comb begin
     end else if (in_neck_reg[1]) begin
         rgb_nxt = NECK_COLOR;
         
-    end else begin 
+    end else if (in_crowd1_reg[1]) begin
+        rgb_nxt = crowd1_px;
+    end else if (in_crowd2_reg[1]) begin
+        rgb_nxt = crowd2_px;
+    end else begin
         rgb_nxt = BG_COLOR;
     end
 end

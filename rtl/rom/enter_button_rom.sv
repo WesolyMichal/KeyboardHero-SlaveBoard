@@ -1,23 +1,33 @@
+/*
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Jakub Suder
+ *
+ * Description:
+ * This is the ROM for the 'enter.data' bitmap.
+ * WIDTH = 128 px, HEIGHT = 64 px
+ * Address is a 13-bit number, composed of the concatenated
+ * 6-bit y and 7-bit x pixel coordinates.
+ * Bitmap is stored as 1-bit values, where each value corresponds to a color 
+ * that can be iverted by the enter state.
+ * The output 'enter_px' is 12-bit number with concatenated
+ * red, green and blue color values (4-bit each).
+ */
+
 module enter_button_rom (
     input  logic clk,
-    input  logic [12:0] rom_addr, // 13 bitów na adresy do 8191
-    output logic enter_pixel_bit
+    input  logic [12:0] rom_addr,
+    output logic enter_px
 );
+    
+    (* rom_style = "block" *) logic [0:0] rom [0:8191]; 
 
-    // Deklaracja wewnętrznej pamięci ROM: 1 bit szerokości, 8192 elementów głębokości
-    // Zmień 8191 na 4351, jeśli użyjesz dokładnie tego pliku, który wkleiłeś wyżej
-    (* rom_style = "block" *) logic [0:0]btn_memory [0:8191]; 
-
-    // Wczytanie pliku przy starcie układu
     initial begin
-        // Plik "enter_button.data" musi znajdować się w folderze symulacji 
-        // lub być dodany do Vivado jako "Design Source"
-        $readmemb("../../rtl/data/enter.data", btn_memory);
+        $readmemb("../../rtl/data/enter.data", rom);
     end
-
-    // Odczyt synchroniczny z opóźnieniem 1 taktu (tak jak prawdzimy Block RAM)
+    
     always_ff @(posedge clk) begin
-        enter_pixel_bit <= btn_memory[rom_addr];
+        enter_px <= rom[rom_addr];
     end
 
 endmodule

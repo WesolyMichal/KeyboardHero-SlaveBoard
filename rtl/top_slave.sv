@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Jakub Suder
+ *
+ * Description:
+ * Top module of slave board.
+ */
 import game_pkg::*;
 import vga_pkg::*;
 
@@ -102,7 +110,6 @@ module top_slave (
         .song_choosing,
         .song_confirm,
         .song_select,
-        .led(comm_led),
         .functional_buttons
     );
 
