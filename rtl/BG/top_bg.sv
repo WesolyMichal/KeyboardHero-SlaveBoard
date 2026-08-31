@@ -24,6 +24,8 @@ module top_bg (
 
 game_pkg::enable_bgs enable_from_bg;
 wire [11:0] rgb_out_start_bg, rgb_out_choose_bg, rgb_out_song_bg, rgb_out_endscreen_bg;
+logic [23:0] end_score_endscreen;
+
 
 vga_if delay_vga_out, vga_tim;
 
@@ -61,6 +63,13 @@ song_bg u_song_bg (
     .enable_song_out(enable_from_bg.enable_song),
     .rgb_out_song_bg
 );
+always_ff @(posedge clk or negedge rst_n) begin
+        if(!rst_n) begin
+            end_score_endscreen <= '0;
+        end else begin
+            end_score_endscreen <= score_in;
+        end
+    end
 
 endscreen_bg u_endscreen_bg(
     .clk,

@@ -44,7 +44,6 @@ wire logic [1:0] song_select_player;
 wire logic [23:0] current_score;
 wire logic [3:0]  current_multiplier;
 
-
 game_action status_del;
 wire logic [5:0] buttons_del;
 
@@ -140,6 +139,7 @@ score_counter u_score_counter(
     .player_action(status_del),
     .action_strobe(tick)
 );
+
 
 score_mask u_score_mask(
     .clk,
