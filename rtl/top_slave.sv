@@ -17,9 +17,7 @@ module top_slave (
         output logic hs,
         output logic [3:0] r,
         output logic [3:0] g,
-        output logic [3:0] b,
-        output logic [15:0] led,
-        input logic [3:0] functional_buttons
+        output logic [3:0] b
     );
 
     timeunit 1ns;
@@ -31,7 +29,6 @@ module top_slave (
     
     wire logic [7:0] MSG, r_data;
     wire logic rd_uart, rx_empty, read_data;
-    wire logic [12:0] comm_led;
 
     wire logic enter, esc, song_choosing, song_confirm;
     wire logic enable_song_mask;
@@ -41,11 +38,8 @@ module top_slave (
     wire enable_bgs enable_bgs_FSM;
 
     wire final_note, enter_out;
-    wire logic [1:0] screen_led;
-    wire logic [2:0] state_led;
-    wire [15:0] end_score;
+    wire [23:0] end_score;
 
-    // VGA interfaces
     vga_if vga_bg, vga_out;
 
     /**
@@ -58,12 +52,6 @@ module top_slave (
     assign g = vga_out.rgb[7:4];
     assign b = vga_out.rgb[3:0];
 
-    // always_comb begin
-    //     led = '0;
-    //     led[12:0] = comm_led;
-    //     led[9:8] = screen_led;
-    //     led[15:13] = state_led;
-    // end
 
     /**
      * Submodules instances
@@ -77,15 +65,8 @@ module top_slave (
         .rx(UART_rx),
         .r_data,
         .rd_uart,
-        .rx_empty,
-        .wr_uart(),
-        .w_data(),
-        .tx_full(),
-        .tx(),
-        .tx_empty_out()
-    );
-
-    
+        .rx_empty
+     );
 
     uart_reader u_uart_reader(
         .clk,
@@ -96,7 +77,6 @@ module top_slave (
         .data_ready(read_data),
         .out_data(MSG)
     );
-    assign led[15:8] = MSG;
     
     comm_decoder u_comm_decoder(
         .clk,
@@ -109,11 +89,8 @@ module top_slave (
         .game_engine,
         .song_choosing,
         .song_confirm,
-        .song_select,
-        .functional_buttons
+        .song_select
     );
-
-    assign led[7:0] = game_engine;
 
     slave_FSM u_slave_FSM(
         .clk,
@@ -126,9 +103,7 @@ module top_slave (
         .final_note,
         .enter_out_FSM(enter_out),
         .master_song,
-        .status(game_engine.status),
-        .screen_led,
-        .state_out(state_led)
+        .status(game_engine.status)
     );
 
     top_bg u_top_bg(

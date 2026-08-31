@@ -14,25 +14,20 @@ module slave_FSM (
     input logic final_note,
 
     input logic song_confirm,
-    input logic [2:0] master_song_select,
+    input logic [1:0] master_song_select,
 
     input logic enter,
     input logic esc,
     input game_action status,
 
-    output logic [2:0] master_song,
+    output logic [1:0] master_song,
     output game_pkg::enable_bgs enable_bgs_FSM,
-    output logic enter_out_FSM,
-    output logic [1:0] screen_led,
-
-    output logic [2:0] state_out
+    output logic enter_out_FSM
 );
 
 enum logic [2:0] {WAIT_CONN, HOME_SCREEN, WAIT_HOMESCREEN, SONG_CHOOSE, PLAY_SONG, ENDSCREEN} state, state_nxt;
 
-assign state_out = state;
-
-logic [2:0] master_song_nxt;
+logic [1:0] master_song_nxt;
 
 localparam integer TIMER_1S = 25_000_000;
 logic [25:0] timer, timer_nxt;
@@ -106,15 +101,6 @@ always_comb begin //obsuga wyjsc
     enable_bgs_FSM.enable_endscreen = (state inside {ENDSCREEN});
     
     enter_out_FSM = (state inside {WAIT_HOMESCREEN});
-end
-
-always_comb begin
-    case (enable_bgs_FSM)
-        4'b0001:   screen_led = 2'b11;
-        4'b0010:   screen_led = 2'b10;
-        4'b0100:   screen_led = 2'b01;
-        4'b1000:   screen_led = 2'b00;
-    endcase
 end
 
 endmodule

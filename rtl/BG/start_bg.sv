@@ -35,11 +35,11 @@ logic [6:0] voff_authors;
 logic [8:0] hoff_authors;
 
 // Flagi kombinacyjne
-logic in_logo, in_button, in_game_name, in_authors, in_sticker;
+logic in_logo, in_button, in_game_name, in_authors;
 
 // Rejestry opóźniające
 logic [1:0] vblnk_reg, hblnk_reg;
-logic [1:0] in_logo_reg, in_button_reg, in_game_name_reg, in_authors_reg, in_sticker_reg, enter_reg;
+logic [1:0] in_logo_reg, in_button_reg, in_game_name_reg, in_authors_reg, enter_reg;
 logic [5:0] px_h_in_char_reg;
 
 logic [1:0] enable_reg;
@@ -49,7 +49,6 @@ logic [11:0] logo_addr_nxt, logo_addr;
 logic [12:0] enter_addr_nxt, enter_addr;
 logic [10:0] font_addr_nxt, font_addr;
 logic [17:0] brickwall_addr_nxt, brickwall_addr;
-// logic [17:0] sticker_addr_nxt, sticker_addr;
 logic [10:0] brickwall_x, brickwall_y;
 
 // Wyjścia z pamięci ROM
@@ -57,7 +56,6 @@ logic [11:0] logo_rgb;
 logic        enter_px;
 logic [7:0]  font_pixels;
 logic [11:0] brickwall_pixels;
-//logic [11:0] sticker_pixels;
 
 // --- INSTANCJE ROM ---
 agh_image_rom u_agh_image_rom (
@@ -84,20 +82,12 @@ enter_button_rom u_enter_button_rom  (
     .brickwall_px(brickwall_pixels)
  );
 
-//  sticker_rom u_sticker_rom (
-//     .clk,
-//     .addr(sticker_addr),
-//     .sticker_px(sticker_pixels)
-//  );
-
-
 // --- Logika kombinacyjna wyliczania adresów i flag ---
 always_comb begin
     in_logo   = 1'b0;
     in_button = 1'b0;
     in_game_name = 1'b0;
     in_authors = 1'b0;
-    in_sticker = 1'b0;
     logo_addr_nxt  = '0;
     enter_addr_nxt = '0;
     font_addr_nxt  = '0;
@@ -151,12 +141,6 @@ always_comb begin
             font_addr_nxt = {char_code[6:0], 4'(voff_authors[3:0])};
             px_h_in_char  = hoff_authors[2:0];
     end
-    // Logika STICKER
-    // if ((vga_in.hcount >= STICKER_X && vga_in.hcount < STICKER_X + STICKER_LENGTH) &&
-    //     (vga_in.vcount >= STICKER_Y && vga_in.vcount < STICKER_Y + STICKER_WIDTH )) begin
-    //         in_sticker = 1'b1;
-    //         sticker_addr_nxt = ((vga_in.vcount - STICKER_Y) * 18'd300) + (vga_in.hcount - STICKER_X);
-    // end
 end
 
 
@@ -167,7 +151,6 @@ always_ff @(posedge clk or negedge rst_n) begin
         enter_addr      <= '0;
         font_addr       <= '0;
         brickwall_addr  <= '0;
-        // sticker_addr     <= '0;
 
         enable_reg       <= 2'b0;
 
@@ -177,7 +160,6 @@ always_ff @(posedge clk or negedge rst_n) begin
         in_button_reg     <= 2'b0;
         in_game_name_reg  <= 2'b0;
         in_authors_reg    <= 2'b0;
-        // in_sticker_reg    <= 2'b0;
 
         px_h_in_char_reg <= 6'b0;
         enter_reg         <= 2'b0;
@@ -187,7 +169,6 @@ always_ff @(posedge clk or negedge rst_n) begin
         enter_addr      <= enter_addr_nxt;
         font_addr       <= font_addr_nxt;
         brickwall_addr  <= brickwall_addr_nxt;
-        // sticker_addr    <= sticker_addr_nxt;
 
         enable_reg       <= {enable_reg[0], enable_start_in};
         
@@ -197,7 +178,6 @@ always_ff @(posedge clk or negedge rst_n) begin
         in_button_reg     <= {in_button_reg[0], in_button};
         in_game_name_reg  <= {in_game_name_reg[0], in_game_name};
         in_authors_reg    <= {in_authors_reg[0], in_authors};
-        // in_sticker_reg    <= {in_sticker_reg[0], in_sticker};
 
         px_h_in_char_reg <= {px_h_in_char_reg[2:0], px_h_in_char};
         enter_reg         <= {enter_reg[0], enter};
@@ -218,8 +198,6 @@ always_comb begin
         rgb_nxt = GAME_NAME_COLOR;
     end else if (in_authors_reg[1] && font_pixels[~px_h_in_char_reg[5:3]]) begin 
         rgb_nxt = AUTHORS_COLOR;
-    // end else if ((in_sticker_reg[1]) && (sticker_pixels != 12'h333) &&(sticker_pixels != 12'h233)) begin 
-    //         rgb_nxt = sticker_pixels; // Kolor piksela naklejki
     end else begin  
         rgb_nxt = brickwall_pixels;
     end

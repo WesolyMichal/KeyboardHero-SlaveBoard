@@ -21,6 +21,7 @@ module brickwall_rom (
     input  logic [17:0] addr,
     output logic [11:0] brickwall_px
 );
+    logic [1:0] brickwall_rom_reg;
 
     (* rom_style = "block" *) logic [1:0] rom [0:164399];
 
@@ -28,16 +29,20 @@ module brickwall_rom (
         $readmemb("../../rtl/data/brickwall.data", rom);
     end
 
-    always_ff @(posedge clk) begin
+    always_ff @(posedge clk) begin 
+            brickwall_rom_reg <= rom[addr];
+    end
+
+    always_comb begin
         if (addr < 18'd164400) begin
-            case (rom[addr])
-                2'b00: brickwall_px <= 12'h444;
-                2'b01: brickwall_px <= 12'h666;
-                2'b10: brickwall_px <= 12'h222;
-                2'b11: brickwall_px <= 12'h333; 
+            case (brickwall_rom_reg)
+                2'b00: brickwall_px = 12'h444;
+                2'b01: brickwall_px = 12'h666;
+                2'b10: brickwall_px = 12'h222;
+                2'b11: brickwall_px = 12'h333; 
             endcase
         end else begin
-            brickwall_px <= '0;
+            brickwall_px = 12'h000;
         end
     end
 

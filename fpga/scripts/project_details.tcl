@@ -42,14 +42,11 @@ set sv_files {
     ../rtl/BG/top_bg.sv
     ../rtl/rom/agh_image_rom.sv
     ../rtl/rom/brickwall_rom.sv
-    ../rtl/rom/crowd1_rom.sv
-    ../rtl/rom/crowd2_rom.sv
     ../rtl/rom/enter_button_rom.sv
     ../rtl/rom/font_rom.sv
     ../rtl/rom/mibombo_rom.sv
     ../rtl/rom/song_rom.sv
     ../rtl/rom/star_rom.sv
-    ../rtl/rom/sticker_rom.sv
     ../rtl/song_mask/song_player/song_player_ctl.sv
     ../rtl/song_mask/song_player/song_player_out.sv
     ../rtl/song_mask/song_player/song_player.sv
@@ -96,13 +93,9 @@ set verilog_files {
 set mem_files {
    ../rtl/data/agh_image_rom.data
    ../rtl/data/brickwall.data
-   ../rtl/data/crowd1_bw.data
-   ../rtl/data/crowd2_bw.data
    ../rtl/data/enter.data
    ../rtl/data/mibombo_4.data
-   ../rtl/data/mibombo.data
    ../rtl/data/star.data
-   ../rtl/data/sticker.data
    ../rtl/songs/song_0.data
    ../rtl/songs/song_1.data
    ../rtl/songs/song_2.data

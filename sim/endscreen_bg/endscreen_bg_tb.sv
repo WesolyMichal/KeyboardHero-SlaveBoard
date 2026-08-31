@@ -21,7 +21,7 @@ module endscreen_bg_tb;
     logic clk, rst_n;
     wire vs, hs;
     wire [3:0] r, g, b;
-    logic [15:0] endscore;
+    logic [31:0] endscore;
     wire [11:0] rgb_out_endscreen_bg;
 
     logic enable_endscreen_in, enable_endscreen_out;
@@ -93,7 +93,7 @@ module endscreen_bg_tb;
 
     initial begin
         rst_n = 1'b1;
-        endscore = 300;
+        endscore = 32'd1234567;
         #(RST_START_TIME) rst_n = 1'b0;
         #(RST_ACTIVE_TIME) rst_n = 1'b1;
 

@@ -14,7 +14,7 @@ module song_choose_bg (
     input logic clk,
     input logic rst_n,
     input logic enable_choose_in,
-    input [2:0] master_song,
+    input [1:0] master_song,
 
     input vga_if vga_in,
     
@@ -25,7 +25,7 @@ module song_choose_bg (
 // --- SYGNAŁY WEWNĘTRZNE ---
 logic [11:0] rgb_nxt;
 
-logic [2:0] selected_song;
+logic [1:0] selected_song;
 
 logic [15:0] hoff_text, voff_text;
 logic [7:0]  char_code;
@@ -38,11 +38,11 @@ logic [INSTR_ROW_INDEX_WIDTH-1:0] instruction_row;
 logic [6:0]  y_in_instruction;
 
 //Flagi kombinacyjne
-logic in_text, in_instruction, in_cursor, in_sticker;
+logic in_text, in_instruction, in_cursor;
 
 // Rejestry opóźniające
 logic [1:0] vblnk_reg, hblnk_reg;
-logic [1:0] in_text_reg, in_instruction_reg, in_cursor_reg, in_sticker_reg;
+logic [1:0] in_text_reg, in_instruction_reg, in_cursor_reg;
 logic [5:0] px_h_in_char_reg;
 logic [1:0] enable_reg;
 
@@ -52,20 +52,12 @@ logic [7:0]  font_pixels;
 logic [10:0] brickwall_x, brickwall_y;
 logic [17:0] brickwall_addr_nxt, brickwall_addr;
 logic [11:0] brickwall_pixels;
-logic [17:0] sticker_addr_nxt, sticker_addr;
-logic [11:0] sticker_pixels;
 
 // --- INSTANCJA FONT ROM ---
 font_rom u_font_rom (
     .clk(clk),
     .addr(font_addr),
     .char_line_pixels(font_pixels)
-);
-
-sticker_rom u_sticker_rom (
-    .clk,
-    .addr(sticker_addr),
-    .sticker_px(sticker_pixels)
 );
 
 brickwall_rom u_brickwall_rom (
@@ -79,8 +71,8 @@ always_comb begin
     in_text       = '0;
     in_instruction = '0;
     in_cursor     = '0;
+
     font_addr_nxt = '0;
-    sticker_addr_nxt = '0;
     char_code     = '0;
     hoff_text     = '0;
     voff_text     = '0;
@@ -100,7 +92,7 @@ always_comb begin
     y_in_instruction = '0;
     // Logika NAGŁÓWKA
     if (vga_in.vcount >= HEADING_NAME_START_Y  && vga_in.vcount < HEADING_NAME_START_Y + CHAR_HEIGHT &&
-        vga_in.hcount >= HEADING_NAME_START_X && vga_in.hcount < HEADING_NAME_START_X + 36 * CHAR_WIDTH) begin
+        vga_in.hcount >= HEADING_NAME_START_X && vga_in.hcount < HEADING_NAME_START_X + 46 * CHAR_WIDTH) begin
             in_text   = 1'b1;
             hoff_text = (vga_in.hcount - HEADING_NAME_START_X) >> SCHOOSE_TEXT_ADDR_SHIFT;
             voff_text = (vga_in.vcount - HEADING_NAME_START_Y) >> SCHOOSE_TEXT_ADDR_SHIFT;
@@ -143,8 +135,8 @@ always_comb begin
             px_h_in_char  = hoff_text[2:0];
         end
     end //Logika tekstu instrukcji 
-    else if (vga_in.vcount >= INSTR_START_Y && vga_in.vcount < INSTR_START_Y + 5 * INSTR_ROW_STEP_PIXELS &&
-                 vga_in.hcount >= INSTR_START_X && vga_in.hcount < INSTR_START_X + 56 * CHAR_WIDTH) begin
+    else if (vga_in.vcount >= INSTR_START_Y && vga_in.vcount < INSTR_START_Y + 7 * INSTR_ROW_STEP_PIXELS &&
+                 vga_in.hcount >= INSTR_START_X && vga_in.hcount < INSTR_START_X + CHAR_IN_LINE * CHAR_WIDTH) begin
         if (vga_in.vcount < INSTR_START_Y + INSTR_ROW_STEP_PIXELS) begin
             instruction_row = 0;
             y_in_instruction = vga_in.vcount - INSTR_START_Y;
@@ -160,9 +152,12 @@ always_comb begin
         end else if (vga_in.vcount < INSTR_START_Y + 5 * INSTR_ROW_STEP_PIXELS) begin
             instruction_row = 4;
             y_in_instruction = vga_in.vcount - (INSTR_START_Y + 4 * INSTR_ROW_STEP_PIXELS);
-        end else begin
+        end else if (vga_in.vcount < INSTR_START_Y + 6 * INSTR_ROW_STEP_PIXELS) begin
             instruction_row = 5;
             y_in_instruction = vga_in.vcount - (INSTR_START_Y + 5 * INSTR_ROW_STEP_PIXELS);
+        end else begin
+            instruction_row = 6;
+            y_in_instruction = vga_in.vcount - (INSTR_START_Y + 6 * INSTR_ROW_STEP_PIXELS);
         end
 
         if (y_in_instruction < ROW_HEIGHT) begin
@@ -178,18 +173,13 @@ always_comb begin
             5'd3: char_code = INSTR_3[hoff_text >> 3];
             5'd4: char_code = INSTR_4[hoff_text >> 3];
             5'd5: char_code = INSTR_5[hoff_text >> 3];
+            5'd6: char_code = INSTR_6[hoff_text >> 3];
             default: char_code = 8'h20;
         endcase
 
         font_addr_nxt = {char_code[6:0], 4'(voff_text[3:0])};
         px_h_in_char  = hoff_text[2:0];
         end
-    end
-    //Logika STICKER
-    if ((vga_in.hcount >= STICKER_X && vga_in.hcount < STICKER_X + STICKER_LENGTH) &&
-        (vga_in.vcount >= STICKER_Y && vga_in.vcount < STICKER_Y + STICKER_WIDTH )) begin
-            in_sticker = 1'b1;
-            sticker_addr_nxt = ((vga_in.vcount - STICKER_Y) * 18'd300) + (vga_in.hcount - STICKER_X);
     end
 end
 
@@ -199,8 +189,6 @@ always_ff @(posedge clk or negedge rst_n) begin
         font_addr       <= '0;
         brickwall_addr  <= '0;
         
-        sticker_addr     <= '0;
-
         selected_song   <= '0;
         
         enable_reg          <= '0;
@@ -211,11 +199,9 @@ always_ff @(posedge clk or negedge rst_n) begin
         in_instruction_reg  <= '0;
         in_cursor_reg       <= '0;
         px_h_in_char_reg    <= '0;
-        in_sticker_reg    <= 2'b0;
     end else begin
         font_addr       <= font_addr_nxt;
         brickwall_addr  <= brickwall_addr_nxt;
-        sticker_addr    <= sticker_addr_nxt;
 
         selected_song   <= master_song;
         
@@ -227,7 +213,6 @@ always_ff @(posedge clk or negedge rst_n) begin
         in_instruction_reg  <= {in_instruction_reg[0], in_instruction};
         in_cursor_reg       <= {in_cursor_reg[0], in_cursor};
         px_h_in_char_reg    <= {px_h_in_char_reg[2:0], px_h_in_char};
-        in_sticker_reg    <= {in_sticker_reg[0], in_sticker};
     end
 end
 
@@ -243,9 +228,6 @@ always_comb begin
         end else begin
             rgb_nxt = TEXT_COLOR;
         end
-    end else if ((in_sticker_reg[1]) && (sticker_pixels != 12'h333) &&(sticker_pixels != 12'h233)) begin 
-        rgb_nxt = sticker_pixels; // Kolor piksela naklejki
-   
     end else begin 
         rgb_nxt = brickwall_pixels;
     end

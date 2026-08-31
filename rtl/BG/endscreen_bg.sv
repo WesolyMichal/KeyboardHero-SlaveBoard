@@ -13,7 +13,7 @@ import bg_pkg::*;
 module endscreen_bg (
     input logic clk,
     input logic rst_n,
-    input logic [31:0] end_score_in,
+    input logic [23:0] end_score_in,
     input logic enable_endscreen_in,
 
     input vga_if vga_in,
@@ -38,7 +38,9 @@ logic [9:0] px_in_star;
 
 logic [6:0] voff_score;
 logic [7:0] hoff_score;
-logic [3:0] digit_4, digit_3, digit_2, digit_1, digit_0;
+logic [3:0] digit_5, digit_4, digit_3, digit_2, digit_1, digit_0;
+logic [3:0] digit_5_nxt, digit_4_nxt, digit_3_nxt, digit_2_nxt, digit_1_nxt, digit_0_nxt;
+logic [23:0] bcd_score;
 logic [3:0] current_digit;
 
 // Flagi kombinacyjne
@@ -60,6 +62,25 @@ logic [1:0]  star_pixel;
 logic [10:0] brickwall_x, brickwall_y;
 logic [17:0] brickwall_addr_nxt, brickwall_addr;
 logic [11:0] brickwall_pixels;
+
+// Funkcja konwertująca system binarny na BCD kożystając z algorytmu Double Dabble
+function automatic logic [23:0] bin_to_bcd(input logic [23:0] bin);
+    logic [23:0] bcd;
+    bcd = '0;
+    
+    for (int i = 23; i >= 0; i--) begin
+        if (bcd[3:0]   >= 5) bcd[3:0]   = bcd[3:0]   + 3;
+        if (bcd[7:4]   >= 5) bcd[7:4]   = bcd[7:4]   + 3;
+        if (bcd[11:8]  >= 5) bcd[11:8]  = bcd[11:8]  + 3;
+        if (bcd[15:12] >= 5) bcd[15:12] = bcd[15:12] + 3;
+        if (bcd[19:16] >= 5) bcd[19:16] = bcd[19:16] + 3;
+        if (bcd[23:20] >= 5) bcd[23:20] = bcd[23:20] + 3; 
+
+        bcd = {bcd[22:0], bin[i]};
+    end
+    
+    return bcd;
+endfunction
 
 // --- INSTANCJE ROM ---
 font_rom u_font_rom (
@@ -93,6 +114,15 @@ always_comb begin
     star_is_earned  = 1'b0;
     current_digit   = 4'd0;
 
+    bcd_score = bin_to_bcd(end_score);
+    digit_5_nxt = bcd_score[23:20];
+    digit_4_nxt = bcd_score[19:16];
+    digit_3_nxt = bcd_score[15:12];
+    digit_2_nxt = bcd_score[11:8];
+    digit_1_nxt = bcd_score[7:4];
+    digit_0_nxt = bcd_score[3:0];
+
+
     brickwall_addr_nxt = '0;
 
     brickwall_x = wrap_coordinate(vga_in.hcount, 11'd600);
@@ -120,13 +150,15 @@ always_comb begin
         hoff_score = (vga_in.hcount - SCORE_X) >> ENDSCREEN_CHAR_ADDR_SHIFT;
         voff_score = (vga_in.vcount - SCORE_Y) >> ENDSCREEN_CHAR_ADDR_SHIFT;
 
-        case (hoff_score / 8)
-            8'd0: current_digit = digit_4;
-            8'd1: current_digit = digit_3;
-            8'd2: current_digit = digit_2;
-            8'd3: current_digit = digit_1;
-            8'd4: current_digit = digit_0;
-            default: current_digit = 4'd0;
+        
+        case (hoff_score >> 3)
+            8'd0: current_digit = digit_5;
+            8'd1: current_digit = digit_4;
+            8'd2: current_digit = digit_3;
+            8'd3: current_digit = digit_2;
+            8'd4: current_digit = digit_1;
+            8'd5: current_digit = digit_0;
+           default: current_digit = 4'd0;
         endcase
 
         char_code     = 8'h30 + current_digit; 
@@ -148,9 +180,11 @@ always_comb begin
             star_addr_nxt = (voff_star << 1) + (voff_star << 4) + (voff_star << 5);
             star_addr_nxt += px_in_star; 
 
-            if (star_idx == 0 && end_score >= 20000) star_is_earned = 1'b1;
-            if (star_idx == 1 && end_score >= 40000) star_is_earned = 1'b1;
-            if (star_idx == 2 && end_score >= 60000) star_is_earned = 1'b1;
+            if (star_idx == 0 && end_score >= 32'd15000) star_is_earned = 1'b1;
+            if (star_idx == 1 && end_score >= 32'd30000) star_is_earned = 1'b1;
+            if (star_idx == 2 && end_score >= 32'd45000) star_is_earned = 1'b1;
+            if (star_idx == 3 && end_score >= 32'd60000) star_is_earned = 1'b1;
+            if (star_idx == 4 && end_score >= 32'd75000) star_is_earned = 1'b1;
         end
     end
 end
@@ -164,6 +198,7 @@ always_ff @(posedge clk or negedge rst_n) begin
         brickwall_addr    <= '0;
 
         end_score         <= '0;
+        digit_5           <= '0;
         digit_4           <= '0;
         digit_3           <= '0;
         digit_2           <= '0;
@@ -185,11 +220,12 @@ always_ff @(posedge clk or negedge rst_n) begin
         brickwall_addr    <= brickwall_addr_nxt;
         
         end_score         <= end_score_in; 
-        digit_4           <= (end_score_in / 10000) % 10; 
-        digit_3           <= (end_score_in / 1000) % 10; 
-        digit_2           <= (end_score_in / 100) % 10;  
-        digit_1           <= (end_score_in / 10) % 10;   
-        digit_0           <= end_score_in % 10;          
+        digit_5           <= digit_5_nxt;
+        digit_4           <= digit_4_nxt; 
+        digit_3           <= digit_3_nxt; 
+        digit_2           <= digit_2_nxt;  
+        digit_1           <= digit_1_nxt;   
+        digit_0           <= digit_0_nxt;          
 
         enable_reg        <= {enable_reg[0], enable_endscreen_in};
         vblnk_reg           <= {vblnk_reg[0], vga_in.vblnk};

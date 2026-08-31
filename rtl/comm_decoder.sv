@@ -24,16 +24,12 @@ module comm_decoder(
     output logic enter,
     output logic esc,
 
-    output logic [1:0] song_select,
-    input logic [3:0] functional_buttons
+    output logic [1:0] song_select
 );
 
 logic enter_nxt, esc_nxt, song_choosing_nxt, song_confirm_nxt;
 logic [1:0] song_select_nxt;
 game_if game_engine_nxt;
-
-logic [3:0] functional_buttons_prev;
-logic [3:0] functional_buttons_rise;
 
 always_ff @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
@@ -78,19 +74,9 @@ always_comb begin
             end
         endcase
     end
-    
-     if (functional_buttons_rise[2]) begin
-        song_choosing_nxt = 1'b1;
-        if (song_select == 2'd3)
-            song_select_nxt = 2'd0;
-         else
-            song_select_nxt = song_select + 3'd1;
-    end else if (functional_buttons_rise[3]) begin
-        song_confirm_nxt = 1'b1;
-    end
-    
-    esc_nxt = esc_nxt | functional_buttons_rise[0];
-    enter_nxt = enter_nxt | functional_buttons_rise[1];
+        
+    esc_nxt = esc_nxt;
+    enter_nxt = enter_nxt;
 
     if (esc_nxt)
         song_select_nxt = '0;
@@ -109,20 +95,6 @@ always_comb begin
         game_engine_nxt.buttons = '0;
         game_engine_nxt.status = PLAYER_IDLE;
     end        
-end
-
-
-always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        functional_buttons_prev <= '0;
-    end else begin
-        functional_buttons_prev <= functional_buttons;
-    end
-end
-
-always_comb begin
-    functional_buttons_rise =
-        functional_buttons & ~functional_buttons_prev;
 end
 
 endmodule

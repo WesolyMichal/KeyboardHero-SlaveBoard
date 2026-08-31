@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2026  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Michał Wesołowski
+ *
+ * Description:
+ * Top module responsible for calculating current score and multiplier and also drawing notes, buttons, score, multiplier.
+ */
+
 import game_pkg::*;
 import vga_pkg::*;
 
@@ -17,7 +26,7 @@ module song_mask #(
 
     output logic final_note,
 
-    output logic [31:0] end_score
+    output logic [23:0] end_score
 );
 
 vga_if vga_del, vga_player, vga_fill, vga_score;
@@ -32,9 +41,8 @@ note_t note_player [0:2];
 wire game_if game_engine_del;
 wire logic [1:0] song_select_player;
 
-wire logic [31:0] current_score;
+wire logic [23:0] current_score;
 wire logic [3:0]  current_multiplier;
-
 
 
 game_action status_del;
@@ -122,7 +130,7 @@ delay #(
 
 
 score_counter u_score_counter(
-    .clk(tick),
+    .clk(clk),
     .rst_n,
     .enable_song(enable_in),
     .current_multiplier,

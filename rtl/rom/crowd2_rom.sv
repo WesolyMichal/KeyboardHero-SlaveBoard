@@ -15,24 +15,34 @@
  * red, green and blue color values (4-bit each).
  */
 
+ // image rom content of: crowd2.png
+// WIDTH = 128
+// HEIGHT = 118
+// Format: 0 for black, 1 for white
+
 module crowd2_rom (
     input  logic clk,
     input  logic [15:0] addr, 
     output logic [11:0] crowd2_px
-);
+); 
 
-    (* rom_style = "block" *) logic [0:0] rom [0:60159];
+    logic crowd2_rom_reg;
+
+    (* rom_style = "block" *) logic [0:0] rom [0:15103];
 
     initial begin
-        $readmemb("../../rtl/data/crowd2_bw.data", rom);
+        $readmemb("../../rtl/data/crowd2_small_bw.data", rom);
     end
 
     always_ff @(posedge clk) begin
-        if ((addr < 16'd60160) && (rom[addr] == 1'b1)) begin
-            crowd2_px <= 12'hfff;
-        end else begin
-            crowd2_px <= '0;
-        end
+        crowd2_rom_reg <= rom[addr];
+    end
+
+    always_comb begin
+        if ((addr < 16'd15104) && (crowd2_rom_reg == 1'b1)) begin
+            crowd2_px = 12'hfff;
+        end else
+            crowd2_px = 12'h000;
     end
 
 endmodule

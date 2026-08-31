@@ -13,7 +13,7 @@ package bg_pkg;
     localparam [11:0] GAME_NAME_COLOR = 12'hf_f_0;
     localparam [11:0] AUTHORS_COLOR = 12'hf_f_f;
 
-    localparam LOGO_X = 0;
+    localparam LOGO_X = 11'd0;
     localparam LOGO_Y = 704;
     localparam LOGO_LENGTH = 48; 
     localparam LOGO_WIDTH  = 64; 
@@ -44,7 +44,7 @@ package bg_pkg;
 
 //song_choose_bg
     localparam [11:0] TEXT_COLOR   = 12'hf_f_f;
-    localparam [11:0] INSTR_TEXT_COLOR = 12'h72c;
+    localparam [11:0] INSTR_TEXT_COLOR = 12'hf0f;
     localparam [11:0] CURSOR_COLOR = 12'hf_f_0; 
 
     localparam SCHOOSE_TEXT_SCALE = 2;
@@ -52,20 +52,13 @@ package bg_pkg;
     localparam CHAR_WIDTH = BASE_CHAR_WIDTH * SCHOOSE_TEXT_SCALE;
     localparam CHAR_HEIGHT = BASE_CHAR_HEIGHT * SCHOOSE_TEXT_SCALE;
 
-    localparam INSTR_START_X = 64;
-    localparam INSTR_START_Y = 450; //;)
-    localparam INSTR_ROW_STEP_PIXELS = 48;
-    localparam INSTR_ROW_INDEX_WIDTH = $clog2(768 / INSTR_ROW_STEP_PIXELS + 1);
-    localparam logic [0:55] [7:0] INSTR_0 = "               HOW TO PLAY KEYBOARD HERO?               ";
-    localparam logic [0:55] [7:0] INSTR_1 = "   To play, press SPACEBAR together with buttons 1-6.   ";
-    localparam logic [0:55] [7:0] INSTR_2 = "       Buttons 1-6 match the colors of the notes.       ";
-    localparam logic [0:55] [7:0] INSTR_3 = " Hold the matching button for long notes until they end.";
-    localparam logic [0:55] [7:0] INSTR_4 = "  Use STRUM < or > at the same time as the note button. ";
-    localparam logic [0:55] [7:0] INSTR_5 = "TO NAVIGATE THRU GAME STAGES USE ENTER BUTTON ESC BUTTON";
+    localparam HEADING_NAME_START_X = 144;
+    localparam HEADING_NAME_START_Y = 33; 
+    localparam logic [0:45] [7:0] Heading = "CHOOSE YOUR SONG FROM THE LIST BELOW USING < >";
 
-    localparam SONG_NAME_START_X = 500;//275 
+    localparam SONG_NAME_START_X = 275;
     localparam SONG_NAME_START_Y = 100; 
-    localparam CURSOR_X = 250; 
+    localparam CURSOR_X = 250;
     localparam SONG_LEN = 24;
     localparam BASE_ROW_STEP_PIXELS = 32;
     localparam ROW_HEIGHT = CHAR_HEIGHT;
@@ -76,15 +69,19 @@ package bg_pkg;
     localparam logic [0:SONG_LEN-1] [7:0] SONG_1 = "2. Hejnal mariacki      ";
     localparam logic [0:SONG_LEN-1] [7:0] SONG_2 = "3. Stairway to Heaven   ";
     localparam logic [0:SONG_LEN-1] [7:0] SONG_3 = "4. Literka A, literka B ";
-
-    localparam HEADING_NAME_START_X = 552;//223
-    localparam HEADING_NAME_START_Y = 33; 
-    localparam logic [0:45] [7:0] Heading = "CHOOSE YOUR SONG FROM THE LIST BELOW USING < >";
     
-    localparam STICKER_X = 100;
-    localparam STICKER_Y = 100;
-    localparam STICKER_LENGTH = 300;
-    localparam STICKER_WIDTH = 335;
+    localparam INSTR_START_X = 32;
+    localparam INSTR_START_Y = 420; //;)
+    localparam CHAR_IN_LINE = 60;
+    localparam INSTR_ROW_STEP_PIXELS = 40;
+    localparam INSTR_ROW_INDEX_WIDTH = $clog2(768 / INSTR_ROW_STEP_PIXELS + 1);
+    localparam logic [0:CHAR_IN_LINE-1] [7:0] INSTR_0 = "                 HOW TO PLAY KEYBOARD HERO??                ";
+    localparam logic [0:CHAR_IN_LINE-1] [7:0] INSTR_1 = "      To play, press SPACEBAR together with buttons 1-6.    ";
+    localparam logic [0:CHAR_IN_LINE-1] [7:0] INSTR_2 = "   Buttons 1-6 match the colors of the notes, and SPACEBAR  ";
+    localparam logic [0:CHAR_IN_LINE-1] [7:0] INSTR_3 = " acts as STRUM. Use STRUM and NOTE together to HIT the note.";
+    localparam logic [0:CHAR_IN_LINE-1] [7:0] INSTR_4 = "          Hold the matching BUTTON for long notes.          ";
+    localparam logic [0:CHAR_IN_LINE-1] [7:0] INSTR_5 = "   To NAVIGATE through stages of game press ESC to return   ";
+    localparam logic [0:CHAR_IN_LINE-1] [7:0] INSTR_6 = "    or ENTER to go forward or confirm the choice of song.   ";
 
 //song_bg
     localparam [11:0] BG_COLOR   = 12'hfff;
@@ -98,12 +95,26 @@ package bg_pkg;
     localparam NECK_WIDTH  = 384; 
     localparam NECK_HEIGHT = 768;
 
-    localparam MIBOMBO_WIDTH  = 218;
-    localparam MIBOMBO_HEIGHT = 292;
+    localparam MIBOMBO_WIDTH  = 210;
+    localparam MIBOMBO_HEIGHT = 281;
     localparam MIBOMBO_Y      = 400; 
 
-    localparam MIBOMBO_L_X    = 67;  
-    localparam MIBOMBO_R_X    = 707; 
+    localparam MIBOMBO_L_X    = 55;  
+    localparam MIBOMBO_R_X    = 759; 
+
+    localparam CROWD1_X = 64;
+    localparam CROWD1_Y = 188;
+    localparam CROWD1_WIDTH = 256;
+    localparam CROWD1_HEIGHT = 212;
+    localparam CROWD1_SCALE = 2;
+    localparam CROWD1_ADDR_SHIFT = $clog2(CROWD1_SCALE);
+
+    localparam CROWD2_X = 704;
+    localparam CROWD2_Y = 165;
+    localparam CROWD2_WIDTH = 256;
+    localparam CROWD2_HEIGHT = 235;
+    localparam CROWD2_SCALE = 2;
+    localparam CROWD2_ADDR_SHIFT = $clog2(CROWD2_SCALE);
 
 //endscren_bg
     localparam ENDSCREEN_CHAR_SCALE = 8; 
@@ -116,21 +127,19 @@ package bg_pkg;
     localparam SCORE_LABEL_HEIGHT = 16;
     localparam logic [0:SCORE_LABEL_LENGTH-1] [7:0] SCORE_LABEL = "Your score:";
 
-    localparam SCORE_X = 384;
+    localparam SCORE_X = 256;
     localparam SCORE_Y = 340; 
-    localparam SCORE_LENGTH = 4; 
+    localparam SCORE_LENGTH = 8; 
     localparam SCORE_WIDTH  = SCORE_LENGTH * 8;
 
-    localparam STAR_X = 362;
+    localparam STAR_X = 238;
     localparam STAR_Y = 468;
     localparam STAR_LENGTH = 50;
     localparam STAR_GAP = 6;
-    localparam STAR_NR = 3;
+    localparam STAR_NR = 5;
     localparam TILE_WIDTH = STAR_LENGTH + STAR_GAP;
     localparam STARS_LENGTH = (TILE_WIDTH * STAR_NR) - STAR_GAP;
     localparam STAR_SCALE = 2; 
     localparam STAR_ADDR_SHIFT = $clog2(STAR_SCALE);
-
-
 
 endpackage

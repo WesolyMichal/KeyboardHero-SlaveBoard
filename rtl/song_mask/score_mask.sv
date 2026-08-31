@@ -18,7 +18,7 @@ module score_mask (
     input logic enable_in,
     output logic enable_out,
 
-    input logic [31:0] current_score,
+    input logic [23:0] current_score,
     input logic [3:0]  current_multiplier
 );
 // --- PARAMETRY --- 
@@ -29,7 +29,7 @@ localparam TEXT_ADDR_SHIFT = $clog2(TEXT_SCALE);
 // SCORE
 localparam SCORE_X = 32;
 localparam SCORE_Y = 32;
-localparam SCORE_CHARS = 12; 
+localparam SCORE_CHARS = 15; 
 localparam SCORE_WIDTH = SCORE_CHARS * 8;
 localparam SCORE_HEIGHT = 16;
 
@@ -45,7 +45,8 @@ localparam logic [0:6][7:0] STR_SCORE = "Score: ";
 localparam logic [0:7][7:0] STR_MULTI = "Multi: x";
 
 // --- SYGNAŁY WEWNĘTRZNE ---
-logic [3:0] s_4, s_3, s_2, s_1, s_0;
+logic [3:0] s_5, s_4, s_3, s_2, s_1, s_0;
+logic [23:0] bcd_score;
 logic [3:0] m_1, m_0;
 
 logic [11:0] rgb_nxt;
@@ -61,6 +62,25 @@ logic in_multi, d1_in_multi;
 
 logic [10:0] font_addr;
 logic [7:0]  font_pixels;
+
+// Funkcja konwertująca system binarny na BCD kożystając z algorytmu Double Dabble
+function automatic logic [23:0] bin_to_bcd(input logic [23:0] bin);
+    logic [23:0] bcd;
+    bcd = '0;
+    
+    for (int i = 23; i >= 0; i--) begin
+        if (bcd[3:0]   >= 5) bcd[3:0]   = bcd[3:0]   + 3;
+        if (bcd[7:4]   >= 5) bcd[7:4]   = bcd[7:4]   + 3;
+        if (bcd[11:8]  >= 5) bcd[11:8]  = bcd[11:8]  + 3;
+        if (bcd[15:12] >= 5) bcd[15:12] = bcd[15:12] + 3;
+        if (bcd[19:16] >= 5) bcd[19:16] = bcd[19:16] + 3;
+        if (bcd[23:20] >= 5) bcd[23:20] = bcd[23:20] + 3; 
+
+        bcd = {bcd[22:0], bin[i]};
+    end
+    
+    return bcd;
+endfunction
 
 // OPÓŹNIONE SYGNAŁY Z INTERFEJSU VGA
 vga_if d1;
@@ -94,11 +114,13 @@ always_comb begin
     px_h_in_char = '0;
     char_idx     = '0;
 
-    s_4 = (current_score / 10000) % 10;
-    s_3 = (current_score / 1000) % 10;
-    s_2 = (current_score / 100) % 10;
-    s_1 = (current_score / 10) % 10;
-    s_0 = current_score % 10;
+    bcd_score = bin_to_bcd(current_score);
+    s_5 = bcd_score[23:20];
+    s_4 = bcd_score[19:16];
+    s_3 = bcd_score[15:12];
+    s_2 = bcd_score[11:8];
+    s_1 = bcd_score[7:4];
+    s_0 = bcd_score[3:0];
 
     m_1 = (current_multiplier / 10) % 10;
     m_0 = current_multiplier % 10;
@@ -110,13 +132,15 @@ always_comb begin
         in_score = 1'b1;
         hoff_text = (vga_in.hcount - SCORE_X) >> TEXT_ADDR_SHIFT;
         voff_text = (vga_in.vcount - SCORE_Y) >> TEXT_ADDR_SHIFT;
-        char_idx = hoff_text >> 3; 
-
+        
+        char_idx = (hoff_text >> 3);
+        
         if (char_idx < 7) char_code = STR_SCORE[char_idx];
-        else if (char_idx == 7) char_code = 8'h30 + s_4;
-        else if (char_idx == 8) char_code = 8'h30 + s_3;
-        else if (char_idx == 9) char_code = 8'h30 + s_2;
-        else if (char_idx == 10) char_code = 8'h30 + s_1;
+        else if (char_idx == 7) char_code = 8'h30 + s_5;
+        else if (char_idx == 8) char_code = 8'h30 + s_4;
+        else if (char_idx == 9) char_code = 8'h30 + s_3;
+        else if (char_idx == 10) char_code = 8'h30 + s_2;
+        else if (char_idx == 11) char_code = 8'h30 + s_1;
         else char_code = 8'h30 + s_0;
 
         font_addr = {char_code[6:0], 4'(voff_text[3:0])};

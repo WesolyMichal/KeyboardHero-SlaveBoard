@@ -1,7 +1,7 @@
 module mibombo_rom (
     input  logic clk,
     input  logic [15:0] addr,
-    output logic mibombo_out
+    output logic [11:0] mibombo_out
 );
 // image rom content of: mibombo.png
 // WIDTH = 210
@@ -12,6 +12,8 @@ module mibombo_rom (
 //   1: RGB(194, 194, 194) - #CCC
 //   2: RGB(115, 58, 2) - #730
 //   3: RGB(254, 254, 254) - #FFF
+    logic [1:0] mibombo_rom_reg;
+
     (* rom_style = "block" *) logic [1:0] rom [0:59009];
 
     initial begin
@@ -19,15 +21,19 @@ module mibombo_rom (
     end
 
     always_ff @(posedge clk) begin
+        mibombo_rom_reg <= rom[addr];
+    end
+
+    always_comb begin
         if (addr < 59010) begin 
-            case(rom[addr])
-                2'b00: mibombo_out <= 12'hccc;
-                2'b01: mibombo_out <= 12'h730;
-                2'b10: mibombo_out <= 12'h000;
-                2'b11: mibombo_out <= 12'hfff;
+            case(mibombo_rom_reg)
+                2'b00: mibombo_out = 12'h000;
+                2'b01: mibombo_out = 12'hccc;
+                2'b10: mibombo_out = 12'h730;
+                2'b11: mibombo_out = 12'hfff;
             endcase
         end else begin
-            mibombo_out <= '0;
+            mibombo_out = 12'h000;
         end
     end
 
