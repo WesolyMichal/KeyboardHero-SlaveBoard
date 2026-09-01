@@ -13,10 +13,10 @@
 #                   Project details                   #
 #-----------------------------------------------------#
 # Project name                                  -- EDIT
-set project_name vga_project
+set project_name KeyboardHero_Slave
 
 # Top module name                               -- EDIT
-set top_module top_vga_basys3
+set top_module top_slave_basys3
 
 # FPGA device
 set target xc7a35tcpg236-1
@@ -26,7 +26,7 @@ set target xc7a35tcpg236-1
 #-----------------------------------------------------#
 # Specify .xdc files location                   -- EDIT
 set xdc_files {
-    constraints/top_vga_basys3.xdc
+    constraints/top_slave_basys3.xdc
     constraints/clk_wiz_0_late.xdc
     constraints/clk_wiz_0.xdc
 }
@@ -44,9 +44,10 @@ set sv_files {
     ../rtl/rom/brickwall_rom.sv
     ../rtl/rom/enter_button_rom.sv
     ../rtl/rom/font_rom.sv
-    ../rtl/rom/mibombo_rom.sv
     ../rtl/rom/song_rom.sv
     ../rtl/rom/star_rom.sv
+    ../rtl/rom/crowd1_rom.sv
+    ../rtl/rom/crowd2_rom.sv
     ../rtl/song_mask/song_player/song_player_ctl.sv
     ../rtl/song_mask/song_player/song_player_out.sv
     ../rtl/song_mask/song_player/song_player.sv
@@ -67,7 +68,7 @@ set sv_files {
     ../rtl/vga_pkg.sv
     ../rtl/vga_timing.sv
     ../rtl/bg_testing.sv
-    rtl/top_vga_basys3.sv
+    rtl/top_slave_basys3.sv
 }
 
 # Specify Verilog design files location         -- EDIT
@@ -94,8 +95,9 @@ set mem_files {
    ../rtl/data/agh_image_rom.data
    ../rtl/data/brickwall.data
    ../rtl/data/enter.data
-   ../rtl/data/mibombo_4.data
    ../rtl/data/star.data
+   ../rtl/data/crowd1_color.data
+   ../rtl/data/crowd2_color.data
    ../rtl/songs/song_0.data
    ../rtl/songs/song_1.data
    ../rtl/songs/song_2.data

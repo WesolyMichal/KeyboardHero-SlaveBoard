@@ -92,7 +92,6 @@ always_comb begin
     enter_addr_nxt = '0;
     font_addr_nxt  = '0;
     brickwall_addr_nxt = '0;
-//   sticker_addr_nxt = '0;
     char_code    = '0;
     px_h_in_char = '0;
 

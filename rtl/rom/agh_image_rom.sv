@@ -24,7 +24,7 @@
  * Local variables and signals
  */
 
- (* rom_style = "block" *) reg [11:0] rom [0:4095];
+ (* rom_style = "distributed" *) reg [11:0] rom [0:4095];
 
 
 /**

@@ -24,7 +24,7 @@ module endscreen_bg (
 
 // --- SYGNAŁY WEWNĘTRZNE ---
 logic [11:0] rgb_nxt;
-logic [31:0] end_score;
+logic [23:0] end_score;
 
 logic [6:0] voff_text;
 logic [7:0] hoff_text;
@@ -62,25 +62,6 @@ logic [1:0]  star_pixel;
 logic [10:0] brickwall_x, brickwall_y;
 logic [17:0] brickwall_addr_nxt, brickwall_addr;
 logic [11:0] brickwall_pixels;
-
-// Funkcja konwertująca system binarny na BCD kożystając z algorytmu Double Dabble
-function automatic logic [23:0] bin_to_bcd(input logic [23:0] bin);
-    logic [23:0] bcd;
-    bcd = '0;
-    
-    for (int i = 23; i >= 0; i--) begin
-        if (bcd[3:0]   >= 5) bcd[3:0]   = bcd[3:0]   + 3;
-        if (bcd[7:4]   >= 5) bcd[7:4]   = bcd[7:4]   + 3;
-        if (bcd[11:8]  >= 5) bcd[11:8]  = bcd[11:8]  + 3;
-        if (bcd[15:12] >= 5) bcd[15:12] = bcd[15:12] + 3;
-        if (bcd[19:16] >= 5) bcd[19:16] = bcd[19:16] + 3;
-        if (bcd[23:20] >= 5) bcd[23:20] = bcd[23:20] + 3; 
-
-        bcd = {bcd[22:0], bin[i]};
-    end
-    
-    return bcd;
-endfunction
 
 // --- INSTANCJE ROM ---
 font_rom u_font_rom (

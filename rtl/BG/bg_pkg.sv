@@ -9,6 +9,26 @@ package bg_pkg;
     );
         wrap_coordinate = (coordinate >= dimension) ? coordinate - dimension : coordinate;
     endfunction
+
+    // Funkcja konwertująca system binarny na BCD kożystając z algorytmu Double Dabble
+    function automatic logic [23:0] bin_to_bcd(input logic [23:0] bin);
+        logic [23:0] bcd;
+        bcd = '0;
+        
+        for (int i = 23; i >= 0; i--) begin
+            if (bcd[3:0]   >= 5) bcd[3:0]   = bcd[3:0]   + 3;
+            if (bcd[7:4]   >= 5) bcd[7:4]   = bcd[7:4]   + 3;
+            if (bcd[11:8]  >= 5) bcd[11:8]  = bcd[11:8]  + 3;
+            if (bcd[15:12] >= 5) bcd[15:12] = bcd[15:12] + 3;
+            if (bcd[19:16] >= 5) bcd[19:16] = bcd[19:16] + 3;
+            if (bcd[23:20] >= 5) bcd[23:20] = bcd[23:20] + 3; 
+
+            bcd = {bcd[22:0], bin[i]};
+        end
+        
+        return bcd;
+    endfunction
+
 //start_bg
     localparam [11:0] GAME_NAME_COLOR = 12'hf_f_0;
     localparam [11:0] AUTHORS_COLOR = 12'hf_f_f;
@@ -40,7 +60,6 @@ package bg_pkg;
     localparam AUTHORS_SCALE = 1;
     localparam AUTHORS_ADDR_SHIFT = $clog2(AUTHORS_SCALE);
     localparam logic [0:AUTHORS_LENGTH-1] [7:0] Authors = "GAME DEVELOPED BY MICHAL WESOLOWSKI AND JAKUB SUDER";
-
 
 //song_choose_bg
     localparam [11:0] TEXT_COLOR   = 12'hf_f_f;
@@ -97,23 +116,23 @@ package bg_pkg;
 
     localparam MIBOMBO_WIDTH  = 210;
     localparam MIBOMBO_HEIGHT = 281;
-    localparam MIBOMBO_Y      = 400; 
+    localparam MIBOMBO_Y      = 480; 
 
     localparam MIBOMBO_L_X    = 55;  
     localparam MIBOMBO_R_X    = 759; 
 
-    localparam CROWD1_X = 64;
-    localparam CROWD1_Y = 188;
-    localparam CROWD1_WIDTH = 256;
-    localparam CROWD1_HEIGHT = 212;
-    localparam CROWD1_SCALE = 2;
+    localparam CROWD1_X = 0;
+    localparam CROWD1_Y = 415;
+    localparam CROWD1_WIDTH = 320;
+    localparam CROWD1_HEIGHT = 195;
+    localparam CROWD1_SCALE = 1;
     localparam CROWD1_ADDR_SHIFT = $clog2(CROWD1_SCALE);
 
     localparam CROWD2_X = 704;
-    localparam CROWD2_Y = 165;
-    localparam CROWD2_WIDTH = 256;
-    localparam CROWD2_HEIGHT = 235;
-    localparam CROWD2_SCALE = 2;
+    localparam CROWD2_Y = 400;
+    localparam CROWD2_WIDTH = 320;
+    localparam CROWD2_HEIGHT = 216;
+    localparam CROWD2_SCALE = 1;
     localparam CROWD2_ADDR_SHIFT = $clog2(CROWD2_SCALE);
 
 //endscren_bg
@@ -127,9 +146,9 @@ package bg_pkg;
     localparam SCORE_LABEL_HEIGHT = 16;
     localparam logic [0:SCORE_LABEL_LENGTH-1] [7:0] SCORE_LABEL = "Your score:";
 
-    localparam SCORE_X = 256;
+    localparam SCORE_X = 320;
     localparam SCORE_Y = 340; 
-    localparam SCORE_LENGTH = 8; 
+    localparam SCORE_LENGTH = 6; 
     localparam SCORE_WIDTH  = SCORE_LENGTH * 8;
 
     localparam STAR_X = 238;

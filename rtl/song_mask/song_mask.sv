@@ -4,7 +4,7 @@
  * Author: Michał Wesołowski
  *
  * Description:
- * Top module responsible for calculating current score and multiplier and also drawing notes, buttons, score, multiplier.
+ * Top module responsible for calculating current score and multiplier and also drawing notes, buttons, score, multiplier during song.
  */
 
 import game_pkg::*;

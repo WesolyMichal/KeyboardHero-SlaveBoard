@@ -20,7 +20,7 @@ module star_rom (
     input  logic [12:0] addr, 
     output logic [1:0] star_pixel
 );
-    (* rom_style = "block" *) logic [1:0] rom [0:8191]; 
+    (* rom_style = "distributed" *) logic [1:0] rom [0:8191]; 
 
     initial begin
         $readmemb("../../rtl/data/star.data", rom);

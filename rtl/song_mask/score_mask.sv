@@ -28,14 +28,14 @@ localparam TEXT_ADDR_SHIFT = $clog2(TEXT_SCALE);
 
 // SCORE
 localparam SCORE_X = 32;
-localparam SCORE_Y = 32;
-localparam SCORE_CHARS = 15; 
+localparam SCORE_Y = 50;
+localparam SCORE_CHARS = 13; 
 localparam SCORE_WIDTH = SCORE_CHARS * 8;
 localparam SCORE_HEIGHT = 16;
 
 // MULTIPLIER
 localparam MULTI_X = 32;
-localparam MULTI_Y = 70; 
+localparam MULTI_Y = 88; 
 localparam MULTI_CHARS = 10; 
 localparam MULTI_WIDTH = MULTI_CHARS * 8;
 localparam MULTI_HEIGHT = 16;

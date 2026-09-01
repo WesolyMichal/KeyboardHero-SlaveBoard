@@ -53,7 +53,7 @@ logic [10:0] brickwall_x, brickwall_y;
 logic [17:0] brickwall_addr_nxt, brickwall_addr;
 logic [11:0] brickwall_pixels;
 
-// --- INSTANCJA FONT ROM ---
+// --- INSTANCJE ROM ---
 font_rom u_font_rom (
     .clk(clk),
     .addr(font_addr),
@@ -134,7 +134,8 @@ always_comb begin
             font_addr_nxt = {char_code[6:0], 4'(voff_text[3:0])};
             px_h_in_char  = hoff_text[2:0];
         end
-    end //Logika tekstu instrukcji 
+    end 
+    //Logika tekstu instrukcji 
     else if (vga_in.vcount >= INSTR_START_Y && vga_in.vcount < INSTR_START_Y + 7 * INSTR_ROW_STEP_PIXELS &&
                  vga_in.hcount >= INSTR_START_X && vga_in.hcount < INSTR_START_X + CHAR_IN_LINE * CHAR_WIDTH) begin
         if (vga_in.vcount < INSTR_START_Y + INSTR_ROW_STEP_PIXELS) begin

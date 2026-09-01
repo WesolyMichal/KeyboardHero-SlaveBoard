@@ -63,6 +63,7 @@ song_bg u_song_bg (
     .enable_song_out(enable_from_bg.enable_song),
     .rgb_out_song_bg
 );
+
 always_ff @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
             end_score_endscreen <= '0;
@@ -74,7 +75,7 @@ always_ff @(posedge clk or negedge rst_n) begin
 endscreen_bg u_endscreen_bg(
     .clk,
     .rst_n,
-    .end_score_in(score_in),
+    .end_score_in(end_score_endscreen),
     .enable_endscreen_in(enable_backgrounds.enable_endscreen),
     .vga_in(vga_tim),
     .enable_endscreen_out(enable_from_bg.enable_endscreen),
